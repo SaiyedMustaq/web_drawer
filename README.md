@@ -1,39 +1,72 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+<h1 align="center">
+  Web Drawer
+</h1>
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+<h2 align="center"> Flutter package to create slidable drawer specially for web.</h2>
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+<h1> Web </h1>
+
+![web_drawer_gif](https://github.com/user-attachments/assets/5139ab2e-a1ea-4a5c-b881-c256c4bf3377)
+
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+ - This widget will provice you to user drawer in flutter web
 
-## Getting started
+## Getting Start
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+ - To use this dependency, add it to your pubspec.yaml file:
+ 
 
-## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
 
+## Basic Example
 ```dart
-const like = 'sample';
+class WrapWithDrawer extends StatelessWidget {
+  const WrapWithDrawer({super.key, required this.child, required this.pageTitle});
+  final Widget child;
+  final String pageTitle;
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: CustomDrawer(
+        menuItems: menuItems,
+        onMenuTap: (route) => context.push(route),
+        profileImageUrl: 'assets/user_place_holder.png',
+        onLogOutClick: () {},
+        isShowUserProfile: true,
+        profileBackground: Colors.black,
+        drawerIconSize: 26,
+        userFirstName: "John",
+        userLastName: "Doe",
+        titleName: pageTitle,
+        isSearchShow: true,
+        headerColor: Colors.blue,
+        drawerColor: Colors.black,
+        version: "1.0.0",
+        titleStyle: const TextStyle(color: Colors.white, fontSize: 20),
+        userNameStyle: const TextStyle(color: Colors.white, fontSize: 16),
+        drawerIconColor: Colors.red,
+        userEmail: "jH9o7@example.com",
+        drawerTextSelectedColor: Colors.white,
+        prefix: SizedBox(),
+        isShowClearIcon: false,
+        isShowUserName: true,
+        //headerWidget: SizedBox.shrink(),
+        drawerHeader: Column(
+          children: [
+            CircleAvatar(radius: 40, backgroundImage: AssetImage('assets/user_place_holder.png')),
+            SizedBox(height: 10),
+            Text("John Doe", style: TextStyle(color: Colors.white, fontSize: 16)),
+            SizedBox(height: 10),
+            Text("jH9o7@example.com", style: TextStyle(color: Colors.white, fontSize: 12)),
+            SizedBox(height: 10),
+          ],
+        ),
+        child: child,
+      ),
+    );
+  }
+}
 ```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
