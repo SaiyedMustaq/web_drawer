@@ -1,13 +1,14 @@
 library;
 
-import 'package:flutter/material.dart';
+import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:web_drawer/src/constant/drawer_colors.dart';
 import 'package:web_drawer/src/model/drawer_menu_item.dart';
 import 'package:web_drawer/src/widget/header_with_animation.dart';
 import 'package:web_drawer/web_drawer.dart';
 
-class CustomDrawer extends StatelessWidget {
+class CustomDrawer extends StatefulWidget {
   const CustomDrawer({
     super.key,
     required this.child,
@@ -36,6 +37,7 @@ class CustomDrawer extends StatelessWidget {
     this.isShowUserProfile = false,
     this.isShowClearIcon = false,
     this.isShowUserName = false,
+    this.customAppBarWidget,
     required this.onLogOutClick,
   }) : prefix = prefix ?? const SizedBox.shrink(),
        drawerIcon = drawerIcon ?? const Icon(Icons.menu),
@@ -124,58 +126,357 @@ class CustomDrawer extends StatelessWidget {
 
   final bool isShowClearIcon;
 
+  /// Custom widget to be displayed in the AppBar
+  final Widget? customAppBarWidget;
+
+  @override
+  State<CustomDrawer> createState() => _CustomDrawerState();
+}
+
+class _CustomDrawerState extends State<CustomDrawer> {
+  @override
+  void initState() {
+    filerManuList.value.addAll(widget.menuItems);
+    super.initState();
+  }
+
+  /// Internal scaffold key for controlling drawer open/close programmatically.
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  TextEditingController searchController = TextEditingController();
+
+  ValueNotifier<List<DrawerMenuItem>> filerManuList = ValueNotifier([]);
+
+  Timer? _debounce;
+
+  searchMenu(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    List<DrawerMenuItem> result = [];
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      final lowerQuery = query.toLowerCase();
+      result = widget.menuItems
+          .where((menu) {
+            String menuTitle = menu.title.toLowerCase();
+            final isMainMatch = menuTitle.startsWith(lowerQuery);
+            final matchingSubMenus = menu.subCategories?.where((subMenu) => subMenu.title.toLowerCase().startsWith(lowerQuery)).toList();
+            return isMainMatch || (matchingSubMenus != null && matchingSubMenus.isNotEmpty);
+          })
+          .map((menu) {
+            final matchingSubMenus = menu.subCategories?.where((subMenu) => subMenu.title.toLowerCase().startsWith(lowerQuery)).toList();
+            return DrawerMenuItem(
+              title: menu.title,
+              route: menu.route,
+              iconUrl: menu.iconUrl,
+              isExpanded: menu.isExpanded,
+
+              subCategories: matchingSubMenus,
+            );
+          })
+          .toList();
+      filerManuList.value = result;
+    });
+  }
+
+  closeDrawer(Size size) {
+    if (size.width < 600) {
+      _scaffoldKey.currentState?.closeDrawer();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        WebDrawer(
-          drawerTextSelectedColor: drawerTextSelectedColor,
-          drawerBackground: drawerColor,
-          menuItems: ValueNotifier(menuItems),
-          isSearchShow: isSearchShow,
-          onMenuTap: (String navigationRoute) {
-            return onMenuTap(navigationRoute);
-          },
-          prefix: prefix,
-          isShowClearIcon: isShowClearIcon,
-          drawerIcon: drawerIcon,
-          drawerIconColor: DrawerColors.drawerIconColor,
-          drawerIconSize: drawerIconSize,
-          onLogOutClick: onLogOutClick,
-          profileBackground: profileBackground,
-          version: version,
-          name: userFirstName ?? "",
-          lastName: userLastName ?? "",
-          email: userEmail ?? "",
-          drawerHeader: drawerHeader,
-        ),
-        Expanded(
-          child: Column(
-            children: [
-              headerWidget ??
-                  HeaderWithAnimation(
-                    haderColor: drawerColor,
-                    titile: titleName ?? "",
-                    userFirstName: userFirstName ?? "",
-                    userLastName: userLastName ?? "",
-                    isShowUserProfile: isShowUserProfile,
-                    isShowUserName: isShowUserName,
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
+    final Size size = MediaQuery.of(context).size;
+    closeDrawer(size);
+    return Scaffold(
+      key: _scaffoldKey,
+      backgroundColor: Colors.transparent,
+      appBar: size.width < 600
+          ? AppBar(
+              centerTitle: false,
+              backgroundColor: widget.drawerColor,
+              title: widget.titleName != null ? Text(widget.titleName!, style: widget.titleStyle) : null,
+              leading: IconButton(
+                icon: widget.drawerIcon,
+                color: widget.drawerIconColor,
+                iconSize: widget.drawerIconSize,
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+              ),
+              toolbarHeight: 64,
+              elevation: 0,
+            )
+          : null,
+      drawer: size.width < 600
+          ? Drawer(
+              elevation: 0,
+              backgroundColor: widget.drawerColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: ValueListenableBuilder<List<DrawerMenuItem>>(
+                      valueListenable: filerManuList,
+                      builder: (context, value, child) {
+                        return Column(
+                          children: [
+                            SizedBox(height: 10),
+                            widget.drawerHeader ?? const SizedBox(),
+                            SizedBox(height: 10),
+                            if (widget.isSearchShow) ...[
+                              if (_scaffoldKey.currentState?.isDrawerOpen ?? false) ...[
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  child: Container(
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10)),
+                                    height: 50, // Fixed height for the TextField
+                                    child: TextField(
+                                      controller: searchController,
+                                      onChanged: (value) => searchMenu(value),
+                                      decoration: InputDecoration(
+                                        contentPadding: const EdgeInsets.symmetric(vertical: 12), // Vertical padding for text
+                                        hintText: 'Search',
+                                        isDense: true,
+                                        prefixIcon: widget.prefix,
+                                        suffixIconColor: Colors.white,
+                                        hintStyle: const TextStyle(color: Colors.white60),
+                                        suffixIcon: widget.isShowClearIcon
+                                            ? IconButton(
+                                                icon: Icon(Icons.clear, color: Colors.white),
+                                                onPressed: () {
+                                                  searchController.clear();
+                                                  searchMenu('');
+                                                },
+                                              )
+                                            : null,
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                                      ),
+                                      style: const TextStyle(color: Colors.white),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                              ],
+                            ],
+                            Expanded(
+                              child: ListView(
+                                shrinkWrap: true,
+                                children: (value.map((item) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                                    child: Container(
+                                      margin: EdgeInsets.only(bottom: 10),
+                                      child: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                          ? ExpansionTile(
+                                              backgroundColor: item.subCategories != null
+                                                  ? Colors.transparent
+                                                  : (item.isSelected ? Colors.white12 : Colors.white10),
+                                              childrenPadding: const EdgeInsets.symmetric(horizontal: 10),
+                                              dense: false,
+                                              tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                              initiallyExpanded: item.isExpanded.value,
+                                              onExpansionChanged: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                                  ? (expanded) {
+                                                      if (!_scaffoldKey.currentState!.isDrawerOpen) return;
+                                                      changeMenu(item.title, null, item, (route) {
+                                                        if (item.subCategories == null) {
+                                                          widget.onMenuTap(route);
+                                                        }
+                                                      }, expanded);
+                                                    }
+                                                  : null,
+                                              leading: Padding(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                                                child: Image.asset(item.iconUrl, color: Colors.white),
+                                              ),
+                                              title: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                                  ? Text(item.title, style: TextStyle(color: Colors.white))
+                                                  : const SizedBox.shrink(),
+                                              trailing: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                                  ? Visibility(
+                                                      visible: (item.subCategories != null && item.subCategories!.isNotEmpty),
+                                                      child: Icon(
+                                                        item.isExpanded.value ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                                                        color: Colors.white,
+                                                      ),
+                                                    )
+                                                  : const SizedBox.shrink(),
+                                              children: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                                  ? (item.subCategories != null)
+                                                        ? item.subCategories!.map((subItem) {
+                                                            //log("Sub Menu ${subItem.toJson()}");
+                                                            return Visibility(
+                                                              visible: subItem.isVisible,
+                                                              child: Theme(
+                                                                data: Theme.of(context).copyWith(
+                                                                  dividerColor: Colors.transparent,
+                                                                  expansionTileTheme: ExpansionTileThemeData(
+                                                                    backgroundColor: subItem.isSelected ? Colors.white12 : Colors.transparent,
+                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                  ),
+                                                                ),
+                                                                child: ExpansionTile(
+                                                                  onExpansionChanged: (value) {
+                                                                    changeMenu(null, subItem.title, item, (route) {
+                                                                      widget.onMenuTap("${item.route}/$route");
+                                                                    }, false);
+                                                                  },
+                                                                  tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                                                  trailing: SizedBox.shrink(),
+                                                                  leading: Padding(
+                                                                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                                                                    child: Image.asset(subItem.iconUrl, color: Colors.white, height: 18),
+                                                                  ),
+                                                                  title: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                                                      ? Text(
+                                                                          subItem.title,
+                                                                          style: TextStyle(color: Colors.white),
+                                                                          maxLines: 1,
+                                                                          overflow: TextOverflow.ellipsis,
+                                                                          softWrap: true,
+                                                                        )
+                                                                      : SizedBox.shrink(),
+                                                                ),
+                                                              ),
+                                                            );
+                                                          }).toList()
+                                                        : []
+                                                  : [],
+                                            )
+                                          : Container(
+                                              decoration: BoxDecoration(
+                                                color: item.isSelected ? Colors.white12 : Colors.transparent,
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                              //margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                              padding: const EdgeInsets.symmetric(vertical: 20),
+                                              child: Image.asset(item.iconUrl, color: Colors.white, height: widget.drawerIconSize),
+                                            ),
+                                    ),
+                                  );
+                                }).toList()),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
-                    userNameStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    profileImage: profileImageUrl,
                   ),
-              Expanded(child: child),
-            ],
+                  ExpansionTile(
+                    tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    leading: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                      child: Icon(Icons.logout, color: widget.drawerIconColor, size: widget.drawerIconSize),
+                    ),
+                    title: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                        ? Text("Logout", style: TextStyle(color: widget.drawerTextSelectedColor))
+                        : const SizedBox.shrink(),
+                    backgroundColor: Colors.transparent,
+                    textColor: Colors.white,
+                    iconColor: Colors.white,
+                    trailing: const SizedBox.shrink(),
+                    children: [
+                      ListTile(
+                        onTap: () => widget.onLogOutClick(),
+                        title: const Text("Logout", style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
+                  if (widget.version != null)
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "V ${widget.version ?? ""}",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            )
+          : SizedBox.shrink(),
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (size.width > 600) ...[
+            WebDrawer(
+              drawerTextSelectedColor: widget.drawerTextSelectedColor,
+              drawerBackground: widget.drawerColor,
+              menuItems: ValueNotifier(widget.menuItems),
+              isSearchShow: widget.isSearchShow,
+              onMenuTap: (String navigationRoute) {
+                return widget.onMenuTap(navigationRoute);
+              },
+              prefix: widget.prefix,
+              isShowClearIcon: widget.isShowClearIcon,
+              drawerIcon: widget.drawerIcon,
+              drawerIconColor: DrawerColors.drawerIconColor,
+              drawerIconSize: widget.drawerIconSize,
+              onLogOutClick: widget.onLogOutClick,
+              profileBackground: widget.profileBackground,
+              version: widget.version,
+              name: widget.userFirstName ?? "",
+              lastName: widget.userLastName ?? "",
+              email: widget.userEmail ?? "",
+              drawerHeader: widget.drawerHeader,
+            ),
+          ],
+
+          Expanded(
+            child: Column(
+              children: [
+                if (size.width > 600) ...[
+                  widget.headerWidget ??
+                      HeaderWithAnimation(
+                        headerColor: widget.drawerColor,
+                        title: widget.titleName ?? "",
+                        userFirstName: widget.userFirstName ?? "",
+                        userLastName: widget.userLastName ?? "",
+                        isShowUserProfile: widget.isShowUserProfile,
+                        isShowUserName: widget.isShowUserName,
+                        titleStyle: const TextStyle(color: Colors.white, fontSize: 20),
+                        userNameStyle: const TextStyle(color: Colors.white, fontSize: 16),
+                        profileImage: widget.profileImageUrl,
+                      ),
+                ],
+                Expanded(child: widget.child),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
+  }
+
+  void changeMenu(String? title, String? childTitle, DrawerMenuItem item, Function(String route) onTap, bool isExpanded) {
+    for (DrawerMenuItem menu in widget.menuItems) {
+      final isCurrent = menu.title == item.title;
+      final isSelectedMenu = menu.title == title;
+
+      // Expand the current item
+      menu.isExpanded.value = isCurrent;
+      // Reset selection
+      menu.isSelected = false;
+
+      // Handle top-level menu selection
+      if (isSelectedMenu) {
+        menu.isSelected = true;
+        onTap(menu.route);
+      }
+
+      // Handle subcategories
+      if (menu.subCategories != null) {
+        for (var subMenu in menu.subCategories!) {
+          subMenu.isSelected = subMenu.title == childTitle;
+          if (subMenu.isSelected) {
+            onTap(subMenu.route);
+          } else {
+            subMenu.isSelected = false;
+          }
+        }
+      }
+    }
   }
 }

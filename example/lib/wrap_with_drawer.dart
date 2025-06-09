@@ -1,8 +1,6 @@
-/// 30/05/25 30 Friday 15 19 shine
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:web_drawer/custome_web_drawer.dart';
-
 
 import 'main.dart';
 
@@ -13,6 +11,7 @@ class WrapWithDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: Drawer(backgroundColor: Colors.black),
       body: CustomDrawer(
         menuItems: menuItems,
         onMenuTap: (route) => context.push(route),
@@ -30,7 +29,7 @@ class WrapWithDrawer extends StatelessWidget {
         version: "1.0.0",
         titleStyle: const TextStyle(color: Colors.white, fontSize: 20),
         userNameStyle: const TextStyle(color: Colors.white, fontSize: 16),
-        drawerIconColor: Colors.red,
+        drawerIconColor: Colors.white,
         userEmail: "jH9o7@example.com",
         drawerTextSelectedColor: Colors.white,
         prefix: SizedBox(),

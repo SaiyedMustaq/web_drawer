@@ -9,8 +9,8 @@ class ByuningStattion2 extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: WrapWithDrawer(
-        child: Center(child: Text("Byuning Stattion 2")),
         pageTitle: "Byuning Stattion 2",
+        child: Center(child: Text("Byuning Stattion 2")),
       ),
     );
   }
