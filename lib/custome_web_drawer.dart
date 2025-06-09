@@ -149,7 +149,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
 
   Timer? _debounce;
 
-  searchMenu(String query) {
+  void searchMenu(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     List<DrawerMenuItem> result = [];
     _debounce = Timer(const Duration(milliseconds: 500), () {
@@ -158,11 +158,22 @@ class _CustomDrawerState extends State<CustomDrawer> {
           .where((menu) {
             String menuTitle = menu.title.toLowerCase();
             final isMainMatch = menuTitle.startsWith(lowerQuery);
-            final matchingSubMenus = menu.subCategories?.where((subMenu) => subMenu.title.toLowerCase().startsWith(lowerQuery)).toList();
-            return isMainMatch || (matchingSubMenus != null && matchingSubMenus.isNotEmpty);
+            final matchingSubMenus = menu.subCategories
+                ?.where(
+                  (subMenu) =>
+                      subMenu.title.toLowerCase().startsWith(lowerQuery),
+                )
+                .toList();
+            return isMainMatch ||
+                (matchingSubMenus != null && matchingSubMenus.isNotEmpty);
           })
           .map((menu) {
-            final matchingSubMenus = menu.subCategories?.where((subMenu) => subMenu.title.toLowerCase().startsWith(lowerQuery)).toList();
+            final matchingSubMenus = menu.subCategories
+                ?.where(
+                  (subMenu) =>
+                      subMenu.title.toLowerCase().startsWith(lowerQuery),
+                )
+                .toList();
             return DrawerMenuItem(
               title: menu.title,
               route: menu.route,
@@ -177,7 +188,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
     });
   }
 
-  closeDrawer(Size size) {
+  void closeDrawer(Size size) {
     if (size.width < 600) {
       _scaffoldKey.currentState?.closeDrawer();
     }
@@ -194,7 +205,9 @@ class _CustomDrawerState extends State<CustomDrawer> {
           ? AppBar(
               centerTitle: false,
               backgroundColor: widget.drawerColor,
-              title: widget.titleName != null ? Text(widget.titleName!, style: widget.titleStyle) : null,
+              title: widget.titleName != null
+                  ? Text(widget.titleName!, style: widget.titleStyle)
+                  : null,
               leading: IconButton(
                 icon: widget.drawerIcon,
                 color: widget.drawerIconColor,
@@ -222,35 +235,57 @@ class _CustomDrawerState extends State<CustomDrawer> {
                             widget.drawerHeader ?? const SizedBox(),
                             SizedBox(height: 10),
                             if (widget.isSearchShow) ...[
-                              if (_scaffoldKey.currentState?.isDrawerOpen ?? false) ...[
+                              if (_scaffoldKey.currentState?.isDrawerOpen ??
+                                  false) ...[
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
                                   child: Container(
                                     alignment: Alignment.center,
-                                    decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10)),
-                                    height: 50, // Fixed height for the TextField
+                                    decoration: BoxDecoration(
+                                      color: Colors.white10,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    height:
+                                        50, // Fixed height for the TextField
                                     child: TextField(
                                       controller: searchController,
                                       onChanged: (value) => searchMenu(value),
                                       decoration: InputDecoration(
-                                        contentPadding: const EdgeInsets.symmetric(vertical: 12), // Vertical padding for text
+                                        contentPadding:
+                                            const EdgeInsets.symmetric(
+                                              vertical: 12,
+                                            ), // Vertical padding for text
                                         hintText: 'Search',
                                         isDense: true,
                                         prefixIcon: widget.prefix,
                                         suffixIconColor: Colors.white,
-                                        hintStyle: const TextStyle(color: Colors.white60),
+                                        hintStyle: const TextStyle(
+                                          color: Colors.white60,
+                                        ),
                                         suffixIcon: widget.isShowClearIcon
                                             ? IconButton(
-                                                icon: Icon(Icons.clear, color: Colors.white),
+                                                icon: Icon(
+                                                  Icons.clear,
+                                                  color: Colors.white,
+                                                ),
                                                 onPressed: () {
                                                   searchController.clear();
                                                   searchMenu('');
                                                 },
                                               )
                                             : null,
-                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                          borderSide: BorderSide.none,
+                                        ),
                                       ),
-                                      style: const TextStyle(color: Colors.white),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -262,77 +297,196 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                 shrinkWrap: true,
                                 children: (value.map((item) {
                                   return Theme(
-                                    data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                                    data: Theme.of(context).copyWith(
+                                      dividerColor: Colors.transparent,
+                                    ),
                                     child: Container(
                                       margin: EdgeInsets.only(bottom: 10),
-                                      child: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                      child:
+                                          _scaffoldKey
+                                                  .currentState
+                                                  ?.isDrawerOpen ??
+                                              false
                                           ? ExpansionTile(
-                                              backgroundColor: item.subCategories != null
+                                              backgroundColor:
+                                                  item.subCategories != null
                                                   ? Colors.transparent
-                                                  : (item.isSelected ? Colors.white12 : Colors.white10),
-                                              childrenPadding: const EdgeInsets.symmetric(horizontal: 10),
+                                                  : (item.isSelected
+                                                        ? Colors.white12
+                                                        : Colors.white10),
+                                              childrenPadding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                  ),
                                               dense: false,
-                                              tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                              initiallyExpanded: item.isExpanded.value,
-                                              onExpansionChanged: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                              tilePadding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 5,
+                                                    horizontal: 10,
+                                                  ),
+                                              initiallyExpanded:
+                                                  item.isExpanded.value,
+                                              onExpansionChanged:
+                                                  _scaffoldKey
+                                                          .currentState
+                                                          ?.isDrawerOpen ??
+                                                      false
                                                   ? (expanded) {
-                                                      if (!_scaffoldKey.currentState!.isDrawerOpen) return;
-                                                      changeMenu(item.title, null, item, (route) {
-                                                        if (item.subCategories == null) {
-                                                          widget.onMenuTap(route);
-                                                        }
-                                                      }, expanded);
+                                                      if (!_scaffoldKey
+                                                          .currentState!
+                                                          .isDrawerOpen)
+                                                        return;
+                                                      changeMenu(
+                                                        item.title,
+                                                        null,
+                                                        item,
+                                                        (route) {
+                                                          if (item.subCategories ==
+                                                              null) {
+                                                            widget.onMenuTap(
+                                                              route,
+                                                            );
+                                                          }
+                                                        },
+                                                        expanded,
+                                                      );
                                                     }
                                                   : null,
                                               leading: Padding(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                                                child: Image.asset(item.iconUrl, color: Colors.white),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8,
+                                                      vertical: 16,
+                                                    ),
+                                                child: Image.asset(
+                                                  item.iconUrl,
+                                                  color: Colors.white,
+                                                ),
                                               ),
-                                              title: _scaffoldKey.currentState?.isDrawerOpen ?? false
-                                                  ? Text(item.title, style: TextStyle(color: Colors.white))
-                                                  : const SizedBox.shrink(),
-                                              trailing: _scaffoldKey.currentState?.isDrawerOpen ?? false
-                                                  ? Visibility(
-                                                      visible: (item.subCategories != null && item.subCategories!.isNotEmpty),
-                                                      child: Icon(
-                                                        item.isExpanded.value ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+                                              title:
+                                                  _scaffoldKey
+                                                          .currentState
+                                                          ?.isDrawerOpen ??
+                                                      false
+                                                  ? Text(
+                                                      item.title,
+                                                      style: TextStyle(
                                                         color: Colors.white,
                                                       ),
                                                     )
                                                   : const SizedBox.shrink(),
-                                              children: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                              trailing:
+                                                  _scaffoldKey
+                                                          .currentState
+                                                          ?.isDrawerOpen ??
+                                                      false
+                                                  ? Visibility(
+                                                      visible:
+                                                          (item.subCategories !=
+                                                              null &&
+                                                          item
+                                                              .subCategories!
+                                                              .isNotEmpty),
+                                                      child: Icon(
+                                                        item.isExpanded.value
+                                                            ? Icons
+                                                                  .arrow_drop_up
+                                                            : Icons
+                                                                  .arrow_drop_down,
+                                                        color: Colors.white,
+                                                      ),
+                                                    )
+                                                  : const SizedBox.shrink(),
+                                              children:
+                                                  _scaffoldKey
+                                                          .currentState
+                                                          ?.isDrawerOpen ??
+                                                      false
                                                   ? (item.subCategories != null)
-                                                        ? item.subCategories!.map((subItem) {
+                                                        ? item.subCategories!.map((
+                                                            subItem,
+                                                          ) {
                                                             //log("Sub Menu ${subItem.toJson()}");
                                                             return Visibility(
-                                                              visible: subItem.isVisible,
+                                                              visible: subItem
+                                                                  .isVisible,
                                                               child: Theme(
                                                                 data: Theme.of(context).copyWith(
-                                                                  dividerColor: Colors.transparent,
+                                                                  dividerColor:
+                                                                      Colors
+                                                                          .transparent,
                                                                   expansionTileTheme: ExpansionTileThemeData(
-                                                                    backgroundColor: subItem.isSelected ? Colors.white12 : Colors.transparent,
-                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                                    backgroundColor:
+                                                                        subItem
+                                                                            .isSelected
+                                                                        ? Colors
+                                                                              .white12
+                                                                        : Colors
+                                                                              .transparent,
+                                                                    shape: RoundedRectangleBorder(
+                                                                      borderRadius:
+                                                                          BorderRadius.circular(
+                                                                            10,
+                                                                          ),
+                                                                    ),
                                                                   ),
                                                                 ),
                                                                 child: ExpansionTile(
                                                                   onExpansionChanged: (value) {
-                                                                    changeMenu(null, subItem.title, item, (route) {
-                                                                      widget.onMenuTap("${item.route}/$route");
-                                                                    }, false);
+                                                                    changeMenu(
+                                                                      null,
+                                                                      subItem
+                                                                          .title,
+                                                                      item,
+                                                                      (route) {
+                                                                        widget.onMenuTap(
+                                                                          "${item.route}/$route",
+                                                                        );
+                                                                      },
+                                                                      false,
+                                                                    );
                                                                   },
-                                                                  tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                                                  trailing: SizedBox.shrink(),
+                                                                  tilePadding:
+                                                                      const EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            5,
+                                                                        horizontal:
+                                                                            10,
+                                                                      ),
+                                                                  trailing:
+                                                                      SizedBox.shrink(),
                                                                   leading: Padding(
-                                                                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                                                                    child: Image.asset(subItem.iconUrl, color: Colors.white, height: 18),
+                                                                    padding: const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          30,
+                                                                    ),
+                                                                    child: Image.asset(
+                                                                      subItem
+                                                                          .iconUrl,
+                                                                      color: Colors
+                                                                          .white,
+                                                                      height:
+                                                                          18,
+                                                                    ),
                                                                   ),
-                                                                  title: _scaffoldKey.currentState?.isDrawerOpen ?? false
+                                                                  title:
+                                                                      _scaffoldKey
+                                                                              .currentState
+                                                                              ?.isDrawerOpen ??
+                                                                          false
                                                                       ? Text(
-                                                                          subItem.title,
-                                                                          style: TextStyle(color: Colors.white),
-                                                                          maxLines: 1,
-                                                                          overflow: TextOverflow.ellipsis,
-                                                                          softWrap: true,
+                                                                          subItem
+                                                                              .title,
+                                                                          style: TextStyle(
+                                                                            color:
+                                                                                Colors.white,
+                                                                          ),
+                                                                          maxLines:
+                                                                              1,
+                                                                          overflow:
+                                                                              TextOverflow.ellipsis,
+                                                                          softWrap:
+                                                                              true,
                                                                         )
                                                                       : SizedBox.shrink(),
                                                                 ),
@@ -344,12 +498,22 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                             )
                                           : Container(
                                               decoration: BoxDecoration(
-                                                color: item.isSelected ? Colors.white12 : Colors.transparent,
-                                                borderRadius: BorderRadius.circular(10),
+                                                color: item.isSelected
+                                                    ? Colors.white12
+                                                    : Colors.transparent,
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
                                               ),
                                               //margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                              padding: const EdgeInsets.symmetric(vertical: 20),
-                                              child: Image.asset(item.iconUrl, color: Colors.white, height: widget.drawerIconSize),
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    vertical: 20,
+                                                  ),
+                                              child: Image.asset(
+                                                item.iconUrl,
+                                                color: Colors.white,
+                                                height: widget.drawerIconSize,
+                                              ),
                                             ),
                                     ),
                                   );
@@ -362,13 +526,28 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     ),
                   ),
                   ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                    tilePadding: const EdgeInsets.symmetric(
+                      vertical: 5,
+                      horizontal: 10,
+                    ),
                     leading: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                      child: Icon(Icons.logout, color: widget.drawerIconColor, size: widget.drawerIconSize),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 16,
+                      ),
+                      child: Icon(
+                        Icons.logout,
+                        color: widget.drawerIconColor,
+                        size: widget.drawerIconSize,
+                      ),
                     ),
                     title: _scaffoldKey.currentState?.isDrawerOpen ?? false
-                        ? Text("Logout", style: TextStyle(color: widget.drawerTextSelectedColor))
+                        ? Text(
+                            "Logout",
+                            style: TextStyle(
+                              color: widget.drawerTextSelectedColor,
+                            ),
+                          )
                         : const SizedBox.shrink(),
                     backgroundColor: Colors.transparent,
                     textColor: Colors.white,
@@ -377,7 +556,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
                     children: [
                       ListTile(
                         onTap: () => widget.onLogOutClick(),
-                        title: const Text("Logout", style: TextStyle(color: Colors.white)),
+                        title: const Text(
+                          "Logout",
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ),
                     ],
                   ),
@@ -389,7 +571,10 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         child: Text(
                           "V ${widget.version ?? ""}",
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -436,8 +621,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
                         userLastName: widget.userLastName ?? "",
                         isShowUserProfile: widget.isShowUserProfile,
                         isShowUserName: widget.isShowUserName,
-                        titleStyle: const TextStyle(color: Colors.white, fontSize: 20),
-                        userNameStyle: const TextStyle(color: Colors.white, fontSize: 16),
+                        titleStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                        ),
+                        userNameStyle: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
                         profileImage: widget.profileImageUrl,
                       ),
                 ],
@@ -450,19 +641,26 @@ class _CustomDrawerState extends State<CustomDrawer> {
     );
   }
 
-  void changeMenu(String? title, String? childTitle, DrawerMenuItem item, Function(String route) onTap, bool isExpanded) {
+  void changeMenu(
+    String? title,
+    String? childTitle,
+    DrawerMenuItem item,
+    Function(String route) onTap,
+    bool isExpanded,
+  ) {
     for (DrawerMenuItem menu in widget.menuItems) {
       final isCurrent = menu.title == item.title;
       final isSelectedMenu = menu.title == title;
 
       // Expand the current item
-      menu.isExpanded.value = isCurrent;
+
       // Reset selection
       menu.isSelected = false;
 
       // Handle top-level menu selection
       if (isSelectedMenu) {
         menu.isSelected = true;
+        menu.isExpanded.value = isCurrent;
         onTap(menu.route);
       }
 
