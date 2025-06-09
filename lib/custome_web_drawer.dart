@@ -1,14 +1,13 @@
 library;
 
 import 'package:flutter/material.dart';
-
 import 'package:web_drawer/src/constant/drawer_colors.dart';
 import 'package:web_drawer/src/model/drawer_menu_item.dart';
 import 'package:web_drawer/src/widget/header_with_animation.dart';
 import 'package:web_drawer/web_drawer.dart';
 
 class CustomDrawer extends StatelessWidget {
-  const CustomDrawer({
+  CustomDrawer({
     super.key,
     required this.child,
     required this.onMenuTap,
@@ -34,6 +33,7 @@ class CustomDrawer extends StatelessWidget {
     this.userLastName,
     this.isSearchShow = false,
     this.isShowUserProfile = false,
+    this.expandedIconColor = DrawerColors.expandIconColor,
     this.isShowClearIcon = false,
     this.isShowUserName = false,
     required this.onLogOutClick,
@@ -45,137 +45,142 @@ class CustomDrawer extends StatelessWidget {
        profileBackground = profileBackground ?? Colors.transparent,
        drawerHeader = drawerHeader ?? const SizedBox.shrink();
 
-  /// Page to display left side of the drawer
+  /// The main content widget displayed beside the drawer (typically the main page).
   final Widget child;
 
+  /// Widget displayed as a prefix in the drawer (e.g., logo or avatar).
   final Widget prefix;
 
-  /// Drawer header
+  /// Optional widget for the drawer header (e.g., user info or branding).
   final Widget? drawerHeader;
 
-  /// Header widget
+  /// Optional widget that appears above the drawer items (e.g., custom title).
   final Widget? headerWidget;
 
-  /// Drawer icon
+  /// Widget used as the icon to toggle the drawer open/close.
   final Widget drawerIcon;
 
-  /// Drawer header color
+  /// Background color for the header section of the drawer.
   final Color headerColor;
 
-  /// Background color of the drawer
+  /// Background color of the entire drawer panel.
   final Color drawerColor;
 
-  /// Background color of the profile
+  /// Background color for the user profile section (if displayed).
   final Color profileBackground;
 
-  /// Selected text color of the drawer
+  /// Text color applied to the selected drawer item.
   final Color drawerTextSelectedColor;
 
-  /// Is show search to hanlde visibility of search box
+  /// Whether to show the search box in the drawer.
   final bool isSearchShow;
 
-  /// Is show profile to handle visibility of profile
+  /// Whether to display the user profile section.
   final bool isShowUserProfile;
 
-  /// Is show user name to handle visibility of user name
+  /// Whether to display the user name in the profile section.
   final bool isShowUserName;
 
-  /// drawer icon size
+  /// Size of the drawer icon.
   final double drawerIconSize;
 
-  /// dawer icon color
+  /// Color of the drawer icon.
   final Color drawerIconColor;
 
-  /// Page title
+  /// Color of the expand/collapse icon.
+  final Color expandedIconColor;
+
+  /// Optional title text to display at the top of the page.
   final String? titleName;
 
-  /// Title TextStyle
+  /// Text style for the title.
   final TextStyle? titleStyle;
 
-  // User name style
+  /// Text style for the user's first name.
   final TextStyle? userNameStyle;
 
-  /// User first name
+  /// User's first name (used in profile section).
   final String? userFirstName;
 
-  /// User last name
+  /// User's last name (used in profile section).
   final String? userLastName;
 
-  /// User email
+  /// User's email address.
   final String? userEmail;
 
-  /// User profile image
+  /// URL of the user's profile image.
   final String? profileImageUrl;
 
-  /// Last name style
+  /// Text style for the user's last name.
   final TextStyle? userLatsNameStyle;
 
-  /// Version of the app
+  /// App version to be displayed (usually in drawer footer).
   final String? version;
 
-  /// Menu items to display in the drawer
+  /// List of menu items shown in the drawer.
   final List<DrawerMenuItem> menuItems;
 
-  /// on menu tap to handle navigation
+  /// Callback triggered when a drawer menu item is tapped.
+  ///
+  /// Passes the `menuPath` string to navigate accordingly.
   final Function(String menuPath) onMenuTap;
 
-  /// on logout click to handle logout
+  /// Callback triggered when the logout option is tapped.
   final Function onLogOutClick;
 
+  /// Whether to show the clear icon (usually for search input).
   final bool isShowClearIcon;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        WebDrawer(
-          drawerTextSelectedColor: drawerTextSelectedColor,
-          drawerBackground: drawerColor,
-          menuItems: ValueNotifier(menuItems),
-          isSearchShow: isSearchShow,
-          onMenuTap: (String navigationRoute) {
-            return onMenuTap(navigationRoute);
-          },
-          prefix: prefix,
-          isShowClearIcon: isShowClearIcon,
-          drawerIcon: drawerIcon,
-          drawerIconColor: DrawerColors.drawerIconColor,
-          drawerIconSize: drawerIconSize,
-          onLogOutClick: onLogOutClick,
-          profileBackground: profileBackground,
-          version: version,
-          name: userFirstName ?? "",
-          lastName: userLastName ?? "",
-          email: userEmail ?? "",
-          drawerHeader: drawerHeader,
-        ),
-        Expanded(
-          child: Column(
-            children: [
-              headerWidget ??
-                  HeaderWithAnimation(
-                    haderColor: drawerColor,
-                    titile: titleName ?? "",
-                    userFirstName: userFirstName ?? "",
-                    userLastName: userLastName ?? "",
-                    isShowUserProfile: isShowUserProfile,
-                    isShowUserName: isShowUserName,
-                    titleStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                    ),
-                    userNameStyle: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
-                    profileImage: profileImageUrl,
-                  ),
-              Expanded(child: child),
-            ],
+    return Scaffold(
+      body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          WebDrawer(
+            drawerTextSelectedColor: drawerTextSelectedColor,
+            drawerBackground: drawerColor,
+            menuItems: ValueNotifier(menuItems),
+            isSearchShow: isSearchShow,
+            onMenuTap: (String navigationRoute) {
+              return onMenuTap(navigationRoute);
+            },
+            prefix: prefix,
+            isShowClearIcon: isShowClearIcon,
+            drawerIcon: drawerIcon,
+            drawerIconColor: DrawerColors.drawerIconColor,
+            drawerIconSize: drawerIconSize,
+            onLogOutClick: onLogOutClick,
+            profileBackground: profileBackground,
+            version: version,
+            name: userFirstName ?? "",
+            lastName: userLastName ?? "",
+            email: userEmail ?? "",
+            drawerHeader: drawerHeader,
           ),
-        ),
-      ],
+
+          Expanded(
+            child: Column(
+              children: [
+                headerWidget ??
+                    HeaderWithAnimation(
+                      haderColor: headerColor,
+                      titile: titleName ?? "",
+                      userFirstName: userFirstName ?? "",
+                      userLastName: userLastName ?? "",
+                      isShowUserProfile: isShowUserProfile,
+                      isShowUserName: isShowUserName,
+                      titleStyle: const TextStyle(color: Colors.white, fontSize: 20),
+                      userNameStyle: const TextStyle(color: Colors.white, fontSize: 16),
+                      profileImage: profileImageUrl,
+                    ),
+
+                Expanded(child: child),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
