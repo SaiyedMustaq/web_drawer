@@ -1,7 +1,7 @@
 name: web_drawer
 description: "A flutter widget to handle web drawer with header."
-version: 0.0.1
-homepage:
+version: 0.0.2
+repository: https://github.com/SaiyedMustaq/web_drawer.git
 
 environment:
   sdk: ^3.8.0

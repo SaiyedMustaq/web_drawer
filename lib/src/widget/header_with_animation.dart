@@ -3,22 +3,22 @@ import 'package:flutter/material.dart';
 class HeaderWithAnimation extends StatelessWidget {
   const HeaderWithAnimation({
     super.key,
-    required this.haderColor,
+    required this.headerColor,
     TextStyle? titleStyle,
     TextStyle? userNameStyle,
     this.profileImage,
     this.isShowUserProfile = true,
     this.isShowUserName = true,
-    required this.titile,
+    required this.title,
     this.userFirstName,
     this.userLastName,
   }) : titleStyle = titleStyle ?? const TextStyle(color: Colors.white),
        userNameStyle = userNameStyle ?? const TextStyle(color: Colors.white);
 
-  final Color haderColor;
+  final Color headerColor;
   final TextStyle? titleStyle;
   final TextStyle? userNameStyle;
-  final String titile;
+  final String title;
   final String? userFirstName;
   final String? userLastName;
   final String? profileImage;
@@ -29,11 +29,11 @@ class HeaderWithAnimation extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(10),
-      color: haderColor,
+      color: headerColor,
       child: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: haderColor,
-        title: Text(titile, style: titleStyle),
+        backgroundColor: headerColor,
+        title: Text(title, style: titleStyle),
         centerTitle: false,
         actions: [
           if (isShowUserName)
@@ -41,16 +41,8 @@ class HeaderWithAnimation extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  userFirstName ?? "",
-                  style: userNameStyle,
-                  textAlign: TextAlign.start,
-                ),
-                Text(
-                  userLastName ?? "",
-                  style: userNameStyle,
-                  textAlign: TextAlign.start,
-                ),
+                Text(userFirstName ?? "", style: userNameStyle, textAlign: TextAlign.start),
+                Text(userLastName ?? "", style: userNameStyle, textAlign: TextAlign.start),
               ],
             ),
           if (isShowUserProfile)
@@ -58,9 +50,7 @@ class HeaderWithAnimation extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
                 backgroundImage: profileImage != null
-                    ? (profileImage!.contains("http")
-                        ? NetworkImage(profileImage!)
-                        : AssetImage(profileImage!)) as ImageProvider
+                    ? (profileImage!.contains("http") ? NetworkImage(profileImage!) : AssetImage(profileImage!)) as ImageProvider
                     : null,
                 radius: 30,
               ),

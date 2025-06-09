@@ -35,7 +35,7 @@ class DrawerMenuItem {
       route: route ?? this.route,
       isVisible: isVisible ?? this.isVisible,
       iconUrl: iconUrl ?? this.iconUrl,
-      isSelected: isSelected ?? this.isSelected,
+      isSelected: isSelected,
       isExpanded: isExpanded ?? this.isExpanded,
       subCategories: subCategories ?? this.subCategories,
     );

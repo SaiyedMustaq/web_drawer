@@ -5,7 +5,7 @@ import 'package:web_drawer/src/constant/drawer_colors.dart';
 import 'package:web_drawer/src/model/drawer_menu_item.dart';
 
 class WebDrawer extends StatefulWidget {
-  WebDrawer({
+  const WebDrawer({
     super.key,
     required this.menuItems,
     required this.onMenuTap,
@@ -13,32 +13,20 @@ class WebDrawer extends StatefulWidget {
     required this.drawerTextSelectedColor,
     this.drawerBackground = const Color(0xFF0D1B2A),
     Widget? prefix,
-    this.size,
+
     this.drawerHeader,
     Widget? drawerIcon,
-    Widget? collapsedIcon,
-    Widget? expandIcon,
     Color? profileBackground,
     this.name,
     this.lastName,
     this.email,
-    this.logOutText = "LogOut",
     this.version,
     this.drawerIconColor = DrawerColors.drawerIconColor,
     this.drawerIconSize = 18,
-    TextStyle? drawerTextStyle,
-    TextStyle? versionTextStyle,
-    TextStyle? searchTextStyle,
     this.isSearchShow = false,
     this.isShowClearIcon = false,
   }) : prefix = prefix ?? const SizedBox.shrink(),
        drawerIcon = drawerIcon ?? const Icon(Icons.menu),
-       drawerTextStyle = drawerTextStyle ?? TextStyle(color: DrawerColors.drawerColorWhite),
-       versionTextStyle = versionTextStyle ?? TextStyle(color: DrawerColors.drawerColorWhite),
-       searchTextStyle = searchTextStyle ?? TextStyle(color: DrawerColors.drawerColorWhite),
-       expandIcon = expandIcon ?? const Icon(Icons.expand_more, color: DrawerColors.drawerColorWhite),
-       collapsedIcon = collapsedIcon ?? const Icon(Icons.expand_less, color: DrawerColors.drawerColorWhite),
-
        profileBackground = profileBackground ?? Colors.white;
 
   /// List of items to be displayed in the drawer menu.
@@ -346,11 +334,8 @@ class _WebDrawerState extends State<WebDrawer> {
                                                                       : SizedBox.shrink(),
                                                                 ),
                                                               )
-                                                            : Image.asset(
-                                                                subItem.iconUrl,
-                                                                color: widget.drawerIconColor,
-                                                                height: widget.drawerIconSize,
-                                                              ),
+                                                            : Image.asset(subItem.iconUrl, color: widget.drawerIconColor,
+                                                                height: widget.drawerIconSize),
                                                       );
                                                     }).toList()
                                                   : []
