@@ -25,8 +25,17 @@ class WebDrawer extends StatefulWidget {
     this.drawerIconSize = 18,
     this.isSearchShow = false,
     this.isShowClearIcon = false,
+    Widget? expandIcon,
+    Widget? collapsedIcon,
+    this.logOutText,
+    this.size,
+    this.drawerTextStyle,
+    this.versionTextStyle,
+    this.searchTextStyle,
   }) : prefix = prefix ?? const SizedBox.shrink(),
        drawerIcon = drawerIcon ?? const Icon(Icons.menu),
+       expandIcon = expandIcon ?? const Icon(Icons.expand_more),
+       collapsedIcon = collapsedIcon ?? const Icon(Icons.expand_less),
        profileBackground = profileBackground ?? Colors.white;
 
   /// List of items to be displayed in the drawer menu.
@@ -334,8 +343,11 @@ class _WebDrawerState extends State<WebDrawer> {
                                                                       : SizedBox.shrink(),
                                                                 ),
                                                               )
-                                                            : Image.asset(subItem.iconUrl, color: widget.drawerIconColor,
-                                                                height: widget.drawerIconSize),
+                                                            : Image.asset(
+                                                                subItem.iconUrl,
+                                                                color: widget.drawerIconColor,
+                                                                height: widget.drawerIconSize,
+                                                              ),
                                                       );
                                                     }).toList()
                                                   : []
