@@ -19,48 +19,22 @@ List<DrawerMenuItem> menuItems = [
     iconUrl: "assets/piggy-bank.png",
     isExpanded: ValueNotifier(false),
     subCategories: [
-      DrawerSubMenuMenuItem(
-        title: 'Quality',
-        iconUrl: "assets/piggy-bank.png",
-        route: RouteName.byuingstation1,
-      ),
-      DrawerSubMenuMenuItem(
-        title: 'Opetation',
-        iconUrl: "assets/piggy-bank.png",
-        route: RouteName.byuingstation2,
-      ),
+      DrawerSubMenuMenuItem(title: 'Quality', iconUrl: "assets/piggy-bank.png", route: RouteName.byuingstation1),
+      DrawerSubMenuMenuItem(title: 'Opetation', iconUrl: "assets/piggy-bank.png", route: RouteName.byuingstation2),
     ],
   ),
-  DrawerMenuItem(
-    title: 'Procurement',
-    iconUrl: "assets/box.png",
-    isExpanded: ValueNotifier(false),
-    route: RouteName.procurement,
-  ),
+  DrawerMenuItem(title: 'Procurement', iconUrl: "assets/box.png", isExpanded: ValueNotifier(false), route: RouteName.procurement),
   DrawerMenuItem(
     title: 'Handover',
     iconUrl: "assets/settings.png",
     isExpanded: ValueNotifier(false),
     route: RouteName.handover,
     subCategories: [
-      DrawerSubMenuMenuItem(
-        title: 'Handover1',
-        iconUrl: "assets/settings.png",
-        route: RouteName.handover1,
-      ),
-      DrawerSubMenuMenuItem(
-        iconUrl: "assets/settings.png",
-        title: 'Handover2',
-        route: RouteName.handover2,
-      ),
+      DrawerSubMenuMenuItem(title: 'Handover1', iconUrl: "assets/settings.png", route: RouteName.handover1),
+      DrawerSubMenuMenuItem(iconUrl: "assets/settings.png", title: 'Handover2', route: RouteName.handover2),
     ],
   ),
-  DrawerMenuItem(
-    title: 'Sales Invoice',
-    isExpanded: ValueNotifier(false),
-    iconUrl: "assets/user.png",
-    route: RouteName.saleinvoice,
-  ),
+  DrawerMenuItem(title: 'Sales Invoice', isExpanded: ValueNotifier(false), iconUrl: "assets/user.png", route: RouteName.saleinvoice),
 ];
 
 class MyApp extends StatelessWidget {
@@ -70,9 +44,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
+      theme: ThemeData(colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple)),
       routerConfig: router,
       //home: const HomeScreen(),
     );

@@ -41,8 +41,16 @@ class HeaderWithAnimation extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(userFirstName ?? "", style: userNameStyle, textAlign: TextAlign.start),
-                Text(userLastName ?? "", style: userNameStyle, textAlign: TextAlign.start),
+                Text(
+                  userFirstName ?? "",
+                  style: userNameStyle,
+                  textAlign: TextAlign.start,
+                ),
+                Text(
+                  userLastName ?? "",
+                  style: userNameStyle,
+                  textAlign: TextAlign.start,
+                ),
               ],
             ),
           if (isShowUserProfile)
@@ -50,7 +58,10 @@ class HeaderWithAnimation extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: CircleAvatar(
                 backgroundImage: profileImage != null
-                    ? (profileImage!.contains("http") ? NetworkImage(profileImage!) : AssetImage(profileImage!)) as ImageProvider
+                    ? (profileImage!.contains("http")
+                              ? NetworkImage(profileImage!)
+                              : AssetImage(profileImage!))
+                          as ImageProvider
                     : null,
                 radius: 30,
               ),

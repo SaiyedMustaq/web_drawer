@@ -34,8 +34,10 @@ class WebDrawer extends StatefulWidget {
     this.searchTextStyle,
   }) : prefix = prefix ?? const SizedBox.shrink(),
        drawerIcon = drawerIcon ?? const Icon(Icons.menu),
-       expandIcon = expandIcon ?? const Icon(Icons.expand_more),
-       collapsedIcon = collapsedIcon ?? const Icon(Icons.expand_less),
+       expandIcon =
+           expandIcon ?? const Icon(Icons.expand_more, color: Colors.white),
+       collapsedIcon =
+           collapsedIcon ?? const Icon(Icons.expand_less, color: Colors.white),
        profileBackground = profileBackground ?? Colors.white;
 
   /// List of items to be displayed in the drawer menu.
@@ -130,9 +132,14 @@ class _WebDrawerState extends State<WebDrawer> {
     filerManuList.value.addAll(widget.menuItems.value);
   }
 
-  void changeMenu(String? title, String? childTitle, DrawerMenuItem item, Function(String route) onTap, bool isExpanded) {
+  void changeMenu(
+    String? title,
+    String? childTitle,
+    DrawerMenuItem item,
+    Function(String route) onTap,
+    bool isExpanded,
+  ) {
     for (var menu in mainMenuItem.value) {
-      final isCurrent = menu.title == item.title;
       final isSelectedMenu = menu.title == title;
       // Reset selection
       menu.isSelected = false;
@@ -142,6 +149,8 @@ class _WebDrawerState extends State<WebDrawer> {
         menu.isSelected = true;
         menu.isExpanded.value = isExpanded;
         onTap(menu.route);
+      } else {
+        menu.isSelected = false;
       }
 
       // Handle subcategories
@@ -158,14 +167,14 @@ class _WebDrawerState extends State<WebDrawer> {
     }
   }
 
-  drawerStateChange() {
+  void drawerStateChange() {
     isMenuOpen.value = !isMenuOpen.value;
     Future.delayed(const Duration(milliseconds: 500), () {
       isDrawerExpand.value = !isDrawerExpand.value;
     });
   }
 
-  searchMenu(String query) {
+  void searchMenu(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     List<DrawerMenuItem> result = [];
     _debounce = Timer(const Duration(milliseconds: 500), () {
@@ -174,11 +183,22 @@ class _WebDrawerState extends State<WebDrawer> {
           .where((menu) {
             String menuTitle = menu.title.toLowerCase();
             final isMainMatch = menuTitle.startsWith(lowerQuery);
-            final matchingSubMenus = menu.subCategories?.where((subMenu) => subMenu.title.toLowerCase().startsWith(lowerQuery)).toList();
-            return isMainMatch || (matchingSubMenus != null && matchingSubMenus.isNotEmpty);
+            final matchingSubMenus = menu.subCategories
+                ?.where(
+                  (subMenu) =>
+                      subMenu.title.toLowerCase().startsWith(lowerQuery),
+                )
+                .toList();
+            return isMainMatch ||
+                (matchingSubMenus != null && matchingSubMenus.isNotEmpty);
           })
           .map((menu) {
-            final matchingSubMenus = menu.subCategories?.where((subMenu) => subMenu.title.toLowerCase().startsWith(lowerQuery)).toList();
+            final matchingSubMenus = menu.subCategories
+                ?.where(
+                  (subMenu) =>
+                      subMenu.title.toLowerCase().startsWith(lowerQuery),
+                )
+                .toList();
             return DrawerMenuItem(
               title: menu.title,
               route: menu.route,
@@ -193,8 +213,12 @@ class _WebDrawerState extends State<WebDrawer> {
   }
 
   String getUserInitials(String firstName, [String? lastName]) {
-    String firstInitial = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
-    String lastInitial = (lastName != null && lastName.isNotEmpty) ? lastName[0].toUpperCase() : '';
+    String firstInitial = firstName.isNotEmpty
+        ? firstName[0].toUpperCase()
+        : '';
+    String lastInitial = (lastName != null && lastName.isNotEmpty)
+        ? lastName[0].toUpperCase()
+        : '';
     return '$firstInitial$lastInitial';
   }
 
@@ -221,7 +245,11 @@ class _WebDrawerState extends State<WebDrawer> {
                 ),
               ),
             ),
-            if (isMenuOpen.value) ...[const SizedBox(height: 10), if (widget.drawerHeader != null) widget.drawerHeader!, const SizedBox(height: 20)],
+            if (isMenuOpen.value) ...[
+              const SizedBox(height: 10),
+              if (widget.drawerHeader != null) widget.drawerHeader!,
+              const SizedBox(height: 20),
+            ],
             Expanded(
               child: ValueListenableBuilder<List<DrawerMenuItem>>(
                 valueListenable: filerManuList,
@@ -234,28 +262,41 @@ class _WebDrawerState extends State<WebDrawer> {
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Container(
                               alignment: Alignment.center,
-                              decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10)),
+                              decoration: BoxDecoration(
+                                color: Colors.white10,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                               height: 50, // Fixed height for the TextField
                               child: TextField(
                                 controller: searchController,
                                 onChanged: (value) => searchMenu(value),
                                 decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 12), // Vertical padding for text
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ), // Vertical padding for text
                                   hintText: 'Search',
                                   isDense: true,
                                   prefixIcon: widget.prefix,
                                   suffixIconColor: widget.drawerIconColor,
-                                  hintStyle: const TextStyle(color: Colors.white60),
+                                  hintStyle: const TextStyle(
+                                    color: Colors.white60,
+                                  ),
                                   suffixIcon: widget.isShowClearIcon
                                       ? IconButton(
-                                          icon: Icon(Icons.clear, color: widget.drawerIconColor),
+                                          icon: Icon(
+                                            Icons.clear,
+                                            color: widget.drawerIconColor,
+                                          ),
                                           onPressed: () {
                                             searchController.clear();
                                             searchMenu('');
                                           },
                                         )
                                       : null,
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: BorderSide.none,
+                                  ),
                                 ),
                                 style: widget.searchTextStyle,
                               ),
@@ -269,100 +310,197 @@ class _WebDrawerState extends State<WebDrawer> {
                           shrinkWrap: true,
                           children: (value.map((item) {
                             return Theme(
-                              data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-                              child: Container(
-                                margin: EdgeInsets.only(bottom: 10),
-                                child: isMenuOpen.value
-                                    ? ExpansionTile(
-                                        backgroundColor: item.subCategories != null
-                                            ? Colors.transparent
-                                            : (item.isSelected ? Colors.white12 : Colors.white10),
-                                        childrenPadding: const EdgeInsets.symmetric(horizontal: 10),
-                                        dense: false,
-                                        tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                        initiallyExpanded: item.isExpanded.value,
-                                        onExpansionChanged: isMenuOpen.value
-                                            ? (expanded) {
-                                                if (!isMenuOpen.value) return;
-                                                changeMenu(item.title, null, item, (route) {
-                                                  if (item.subCategories == null) {
+                              data: Theme.of(
+                                context,
+                              ).copyWith(dividerColor: Colors.transparent),
+                              child: isMenuOpen.value
+                                  ? ExpansionTile(
+                                      backgroundColor:
+                                          item.subCategories != null
+                                          ? Colors.transparent
+                                          : (item.isSelected
+                                                ? Colors.white12
+                                                : Colors.white10),
+                                      childrenPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                          ),
+                                      dense: false,
+                                      tilePadding: const EdgeInsets.symmetric(
+                                        vertical: 5,
+                                        horizontal: 10,
+                                      ),
+                                      initiallyExpanded: item.isExpanded.value,
+                                      onExpansionChanged: isMenuOpen.value
+                                          ? (expanded) {
+                                              if (!isMenuOpen.value) return;
+                                              changeMenu(
+                                                item.title,
+                                                null,
+                                                item,
+                                                (route) {
+                                                  if (item.subCategories ==
+                                                      null) {
                                                     widget.onMenuTap(route);
                                                   }
-                                                }, expanded);
-                                              }
-                                            : null,
-                                        leading: Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                                          child: Image.asset(item.iconUrl, color: widget.drawerIconColor),
+                                                },
+                                                expanded,
+                                              );
+                                            }
+                                          : null,
+                                      leading: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 16,
                                         ),
-                                        title: isMenuOpen.value ? Text(item.title, style: widget.drawerTextStyle) : const SizedBox.shrink(),
-
-                                        trailing: isMenuOpen.value
-                                            ? Visibility(
-                                                visible: (item.subCategories != null && item.subCategories!.isNotEmpty),
-                                                child: ValueListenableBuilder<bool>(
-                                                  valueListenable: item.isExpanded,
-                                                  builder: (context, value, child) => value ? widget.expandIcon : widget.collapsedIcon,
-                                                ),
-                                              )
-                                            : const SizedBox.shrink(),
-                                        children: isMenuOpen.value
-                                            ? (item.subCategories != null)
-                                                  ? item.subCategories!.map((subItem) {
-                                                      return Visibility(
-                                                        visible: subItem.isVisible,
-                                                        child: isMenuOpen.value
-                                                            ? Theme(
-                                                                data: Theme.of(context).copyWith(
-                                                                  dividerColor: Colors.transparent,
-                                                                  expansionTileTheme: ExpansionTileThemeData(
-                                                                    backgroundColor: subItem.isSelected ? Colors.white12 : Colors.transparent,
-                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                                                  ),
-                                                                ),
-                                                                child: ExpansionTile(
-                                                                  onExpansionChanged: (value) {
-                                                                    changeMenu(null, subItem.title, item, (route) {
-                                                                      widget.onMenuTap("${item.route}/$route");
-                                                                    }, false);
-                                                                  },
-                                                                  tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                                                  trailing: SizedBox.shrink(),
-                                                                  leading: Padding(
-                                                                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                                                                    child: Image.asset(subItem.iconUrl, color: widget.drawerIconColor, height: 18),
-                                                                  ),
-                                                                  title: isMenuOpen.value
-                                                                      ? Text(
-                                                                          subItem.title,
-                                                                          style: widget.drawerTextStyle,
-                                                                          maxLines: 1,
-                                                                          overflow: TextOverflow.ellipsis,
-                                                                          softWrap: true,
-                                                                        )
-                                                                      : SizedBox.shrink(),
-                                                                ),
-                                                              )
-                                                            : Image.asset(
-                                                                subItem.iconUrl,
-                                                                color: widget.drawerIconColor,
-                                                                height: widget.drawerIconSize,
-                                                              ),
-                                                      );
-                                                    }).toList()
-                                                  : []
-                                            : [],
-                                      )
-                                    : Container(
-                                        decoration: BoxDecoration(
-                                          color: item.isSelected ? Colors.white12 : Colors.transparent,
-                                          borderRadius: BorderRadius.circular(10),
+                                        child: Image.asset(
+                                          item.iconUrl,
+                                          color: widget.drawerIconColor,
                                         ),
-                                        //margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                        padding: const EdgeInsets.symmetric(vertical: 20),
-                                        child: Image.asset(item.iconUrl, color: widget.drawerIconColor, height: widget.drawerIconSize),
                                       ),
-                              ),
+                                      title: isMenuOpen.value
+                                          ? Text(
+                                              item.title,
+                                              style: widget.drawerTextStyle,
+                                            )
+                                          : const SizedBox.shrink(),
+
+                                      trailing: isMenuOpen.value
+                                          ? Visibility(
+                                              visible:
+                                                  (item.subCategories != null &&
+                                                  item
+                                                      .subCategories!
+                                                      .isNotEmpty),
+                                              child:
+                                                  ValueListenableBuilder<bool>(
+                                                    valueListenable:
+                                                        item.isExpanded,
+                                                    builder:
+                                                        (
+                                                          context,
+                                                          value,
+                                                          child,
+                                                        ) => value
+                                                        ? widget.expandIcon
+                                                        : widget.collapsedIcon,
+                                                  ),
+                                            )
+                                          : const SizedBox.shrink(),
+                                      children: isMenuOpen.value
+                                          ? (item.subCategories != null)
+                                                ? item.subCategories!.map((
+                                                    subItem,
+                                                  ) {
+                                                    return Visibility(
+                                                      visible:
+                                                          subItem.isVisible,
+                                                      child: isMenuOpen.value
+                                                          ? Theme(
+                                                              data: Theme.of(context).copyWith(
+                                                                dividerColor: Colors
+                                                                    .transparent,
+                                                                expansionTileTheme: ExpansionTileThemeData(
+                                                                  backgroundColor:
+                                                                      subItem
+                                                                          .isSelected
+                                                                      ? Colors
+                                                                            .white12
+                                                                      : Colors
+                                                                            .transparent,
+                                                                  shape: RoundedRectangleBorder(
+                                                                    borderRadius:
+                                                                        BorderRadius.circular(
+                                                                          10,
+                                                                        ),
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              child: ExpansionTile(
+                                                                onExpansionChanged: (value) {
+                                                                  changeMenu(
+                                                                    null,
+                                                                    subItem
+                                                                        .title,
+                                                                    item,
+                                                                    (route) {
+                                                                      widget.onMenuTap(
+                                                                        "${item.route}/$route",
+                                                                      );
+                                                                    },
+                                                                    false,
+                                                                  );
+                                                                },
+                                                                tilePadding:
+                                                                    const EdgeInsets.symmetric(
+                                                                      vertical:
+                                                                          5,
+                                                                      horizontal:
+                                                                          10,
+                                                                    ),
+                                                                trailing:
+                                                                    SizedBox.shrink(),
+                                                                leading: Padding(
+                                                                  padding:
+                                                                      const EdgeInsets.symmetric(
+                                                                        horizontal:
+                                                                            30,
+                                                                      ),
+                                                                  child: Image.asset(
+                                                                    subItem
+                                                                        .iconUrl,
+                                                                    color: widget
+                                                                        .drawerIconColor,
+                                                                    height: 18,
+                                                                  ),
+                                                                ),
+                                                                title:
+                                                                    isMenuOpen
+                                                                        .value
+                                                                    ? Text(
+                                                                        subItem
+                                                                            .title,
+                                                                        style: widget
+                                                                            .drawerTextStyle,
+                                                                        maxLines:
+                                                                            1,
+                                                                        overflow:
+                                                                            TextOverflow.ellipsis,
+                                                                        softWrap:
+                                                                            true,
+                                                                      )
+                                                                    : SizedBox.shrink(),
+                                                              ),
+                                                            )
+                                                          : Image.asset(
+                                                              subItem.iconUrl,
+                                                              color: widget
+                                                                  .drawerIconColor,
+                                                              height: widget
+                                                                  .drawerIconSize,
+                                                            ),
+                                                    );
+                                                  }).toList()
+                                                : []
+                                          : [],
+                                    )
+                                  : Container(
+                                      decoration: BoxDecoration(
+                                        color: item.isSelected
+                                            ? Colors.white12
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      //margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 20,
+                                      ),
+                                      child: Image.asset(
+                                        item.iconUrl,
+                                        color: widget.drawerIconColor,
+                                        height: widget.drawerIconSize,
+                                      ),
+                                    ),
                             );
                           }).toList()),
                         ),
@@ -374,12 +512,27 @@ class _WebDrawerState extends State<WebDrawer> {
             ),
             ExpansionTile(
               onExpansionChanged: (value) => drawerStateChange(),
-              tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                child: Icon(Icons.logout, color: widget.drawerIconColor, size: widget.drawerIconSize),
+              tilePadding: const EdgeInsets.symmetric(
+                vertical: 5,
+                horizontal: 10,
               ),
-              title: isMenuOpen.value ? Text(widget.logOutText ?? "Logout", style: widget.drawerTextStyle) : const SizedBox.shrink(),
+              leading: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 16,
+                ),
+                child: Icon(
+                  Icons.logout,
+                  color: widget.drawerIconColor,
+                  size: widget.drawerIconSize,
+                ),
+              ),
+              title: isMenuOpen.value
+                  ? Text(
+                      widget.logOutText ?? "Logout",
+                      style: widget.drawerTextStyle,
+                    )
+                  : const SizedBox.shrink(),
               backgroundColor: Colors.transparent,
               textColor: Colors.white,
               iconColor: Colors.white,
@@ -387,7 +540,10 @@ class _WebDrawerState extends State<WebDrawer> {
               children: [
                 ListTile(
                   onTap: () => widget.onLogOutClick(),
-                  title: Text(widget.logOutText ?? "Logout", style: widget.drawerTextStyle),
+                  title: Text(
+                    widget.logOutText ?? "Logout",
+                    style: widget.drawerTextStyle,
+                  ),
                 ),
               ],
             ),
@@ -396,7 +552,11 @@ class _WebDrawerState extends State<WebDrawer> {
                 alignment: Alignment.bottomRight,
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: Text("V ${widget.version ?? ""}", textAlign: TextAlign.center, style: widget.versionTextStyle),
+                  child: Text(
+                    "V ${widget.version ?? ""}",
+                    textAlign: TextAlign.center,
+                    style: widget.versionTextStyle,
+                  ),
                 ),
               ),
           ],

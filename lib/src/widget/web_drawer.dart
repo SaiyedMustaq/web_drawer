@@ -24,6 +24,7 @@ class WebDrawer extends StatefulWidget {
     this.drawerIconColor = DrawerColors.drawerIconColor,
     this.drawerIconSize = 18,
     this.isSearchShow = false,
+    required this.drawerTextStyle,
     this.isShowClearIcon = false,
   }) : prefix = prefix ?? const SizedBox.shrink(),
        drawerIcon = drawerIcon ?? const Icon(Icons.menu),
@@ -48,6 +49,7 @@ class WebDrawer extends StatefulWidget {
   final String? lastName;
   final String? email;
   final bool isShowClearIcon;
+  final TextStyle drawerTextStyle;
 
   @override
   State<WebDrawer> createState() => _WebDrawerState();
@@ -302,9 +304,7 @@ class _WebDrawerState extends State<WebDrawer> {
                                         title: isMenuOpen.value
                                             ? Text(
                                                 item.title,
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                ),
+                                                style: widget.drawerTextStyle,
                                               )
                                             : const SizedBox.shrink(),
                                         trailing: isMenuOpen.value
@@ -398,10 +398,8 @@ class _WebDrawerState extends State<WebDrawer> {
                                                                       ? Text(
                                                                           subItem
                                                                               .title,
-                                                                          style: TextStyle(
-                                                                            color:
-                                                                                Colors.white,
-                                                                          ),
+                                                                          style:
+                                                                              widget.drawerTextStyle,
                                                                           maxLines:
                                                                               1,
                                                                           overflow:
@@ -454,7 +452,7 @@ class _WebDrawerState extends State<WebDrawer> {
               ),
             ),
             ExpansionTile(
-              onExpansionChanged: (value) => drawerStateChange(),
+              onExpansionChanged: (value) => widget.onLogOutClick(),
               tilePadding: const EdgeInsets.symmetric(
                 vertical: 5,
                 horizontal: 10,
@@ -471,24 +469,15 @@ class _WebDrawerState extends State<WebDrawer> {
                 ),
               ),
               title: isMenuOpen.value
-                  ? Text(
-                      "Logout",
-                      style: TextStyle(color: widget.drawerTextSelectedColor),
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Text("Logout", style: widget.drawerTextStyle),
                     )
                   : const SizedBox.shrink(),
               backgroundColor: Colors.transparent,
               textColor: Colors.white,
               iconColor: Colors.white,
               trailing: const SizedBox.shrink(),
-              children: [
-                ListTile(
-                  onTap: () => widget.onLogOutClick(),
-                  title: const Text(
-                    "Logout",
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
             ),
             if (widget.version != null)
               Align(

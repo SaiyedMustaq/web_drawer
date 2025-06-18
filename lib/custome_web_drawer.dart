@@ -4,12 +4,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:web_drawer/src/constant/drawer_colors.dart';
+import 'package:web_drawer/src/constant/drawer_style.dart';
 import 'package:web_drawer/src/model/drawer_menu_item.dart';
 import 'package:web_drawer/src/widget/header_with_animation.dart';
 import 'package:web_drawer/web_drawer.dart';
 
 class CustomDrawer extends StatefulWidget {
-  const CustomDrawer({
+  CustomDrawer({
     super.key,
     required this.child,
     required this.onMenuTap,
@@ -25,6 +26,7 @@ class CustomDrawer extends StatefulWidget {
     this.drawerTextSelectedColor = DrawerColors.drawerIconColor,
     this.titleName,
     TextStyle? titleStyle,
+    TextStyle? drawerTextStyle,
     TextStyle? userNameStyle,
     TextStyle? userLatsNameStyle,
     Color? profileBackground,
@@ -37,19 +39,27 @@ class CustomDrawer extends StatefulWidget {
     this.isShowUserProfile = false,
     this.isShowClearIcon = false,
     this.isShowUserName = false,
+    Widget? expandIcon,
+    Widget? collapsedIcon,
     this.customAppBarWidget,
     required this.onLogOutClick,
   }) : prefix = prefix ?? const SizedBox.shrink(),
        drawerIcon = drawerIcon ?? const Icon(Icons.menu),
-       titleStyle = const TextStyle(color: Colors.white, fontSize: 20),
-       userNameStyle = const TextStyle(color: Colors.white, fontSize: 16),
-       userLatsNameStyle = const TextStyle(color: Colors.white, fontSize: 16),
+       titleStyle = titleStyle ?? DrawerStyle.headerTextStyle,
+       drawerTextStyle = drawerTextStyle ?? DrawerStyle.menuTextStyle,
+       userNameStyle = userNameStyle ?? DrawerStyle.userNameStyle,
+       userLatsNameStyle = userLatsNameStyle ?? DrawerStyle.userLastNameStyle,
        profileBackground = profileBackground ?? Colors.transparent,
+       expandIcon =
+           expandIcon ?? const Icon(Icons.expand_more, color: Colors.white),
+       collapsedIcon =
+           collapsedIcon ?? const Icon(Icons.expand_less, color: Colors.white),
        drawerHeader = drawerHeader ?? const SizedBox.shrink();
 
   /// Page to display left side of the drawer
   final Widget child;
 
+  ///
   final Widget prefix;
 
   /// Drawer header
@@ -57,6 +67,12 @@ class CustomDrawer extends StatefulWidget {
 
   /// Header widget
   final Widget? headerWidget;
+
+  /// Widget shown as the icon to expand the drawer.
+  final Widget expandIcon;
+
+  /// Widget shown as the icon to collapse the drawer.
+  final Widget collapsedIcon;
 
   /// Drawer icon
   final Widget drawerIcon;
@@ -123,6 +139,9 @@ class CustomDrawer extends StatefulWidget {
 
   /// on logout click to handle logout
   final Function onLogOutClick;
+
+  /// Optional text style used for drawer menu items.
+  final TextStyle? drawerTextStyle;
 
   final bool isShowClearIcon;
 
@@ -332,10 +351,6 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                                           ?.isDrawerOpen ??
                                                       false
                                                   ? (expanded) {
-                                                      if (!_scaffoldKey
-                                                          .currentState!
-                                                          .isDrawerOpen)
-                                                        return;
                                                       changeMenu(
                                                         item.title,
                                                         null,
@@ -370,9 +385,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                                       false
                                                   ? Text(
                                                       item.title,
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                      ),
+                                                      style: widget
+                                                          .drawerTextStyle,
                                                     )
                                                   : const SizedBox.shrink(),
                                               trailing:
@@ -387,13 +401,21 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                                           item
                                                               .subCategories!
                                                               .isNotEmpty),
-                                                      child: Icon(
-                                                        item.isExpanded.value
-                                                            ? Icons
-                                                                  .arrow_drop_up
-                                                            : Icons
-                                                                  .arrow_drop_down,
-                                                        color: Colors.white,
+                                                      child: ValueListenableBuilder(
+                                                        valueListenable:
+                                                            item.isExpanded,
+                                                        builder:
+                                                            (
+                                                              context,
+                                                              value,
+                                                              child,
+                                                            ) {
+                                                              return value
+                                                                  ? widget
+                                                                        .expandIcon
+                                                                  : widget
+                                                                        .collapsedIcon;
+                                                            },
                                                       ),
                                                     )
                                                   : const SizedBox.shrink(),
@@ -477,16 +499,8 @@ class _CustomDrawerState extends State<CustomDrawer> {
                                                                       ? Text(
                                                                           subItem
                                                                               .title,
-                                                                          style: TextStyle(
-                                                                            color:
-                                                                                Colors.white,
-                                                                          ),
-                                                                          maxLines:
-                                                                              1,
-                                                                          overflow:
-                                                                              TextOverflow.ellipsis,
-                                                                          softWrap:
-                                                                              true,
+                                                                          style:
+                                                                              widget.drawerTextStyle,
                                                                         )
                                                                       : SizedBox.shrink(),
                                                                 ),
@@ -525,43 +539,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       },
                     ),
                   ),
-                  ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(
-                      vertical: 5,
-                      horizontal: 10,
+                  ListTile(
+                    onTap: () {
+                      widget.onLogOutClick();
+                    },
+                    title: const Text(
+                      "Logout",
+                      style: TextStyle(color: Colors.white),
                     ),
-                    leading: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 16,
-                      ),
-                      child: Icon(
-                        Icons.logout,
-                        color: widget.drawerIconColor,
-                        size: widget.drawerIconSize,
-                      ),
-                    ),
-                    title: _scaffoldKey.currentState?.isDrawerOpen ?? false
-                        ? Text(
-                            "Logout",
-                            style: TextStyle(
-                              color: widget.drawerTextSelectedColor,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                    backgroundColor: Colors.transparent,
-                    textColor: Colors.white,
-                    iconColor: Colors.white,
-                    trailing: const SizedBox.shrink(),
-                    children: [
-                      ListTile(
-                        onTap: () => widget.onLogOutClick(),
-                        title: const Text(
-                          "Logout",
-                          style: TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    ],
                   ),
                   if (widget.version != null)
                     Align(
@@ -594,6 +579,7 @@ class _CustomDrawerState extends State<CustomDrawer> {
               onMenuTap: (String navigationRoute) {
                 return widget.onMenuTap(navigationRoute);
               },
+              drawerTextStyle: widget.drawerTextStyle!,
               prefix: widget.prefix,
               isShowClearIcon: widget.isShowClearIcon,
               drawerIcon: widget.drawerIcon,
@@ -615,20 +601,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
                 if (size.width > 600) ...[
                   widget.headerWidget ??
                       HeaderWithAnimation(
-                        headerColor: widget.drawerColor,
+                        headerColor: widget.headerColor,
                         title: widget.titleName ?? "",
                         userFirstName: widget.userFirstName ?? "",
                         userLastName: widget.userLastName ?? "",
                         isShowUserProfile: widget.isShowUserProfile,
                         isShowUserName: widget.isShowUserName,
-                        titleStyle: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
-                        userNameStyle: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
+                        titleStyle: widget.titleStyle,
+                        userNameStyle: widget.userNameStyle,
                         profileImage: widget.profileImageUrl,
                       ),
                 ],
@@ -649,18 +629,14 @@ class _CustomDrawerState extends State<CustomDrawer> {
     bool isExpanded,
   ) {
     for (DrawerMenuItem menu in widget.menuItems) {
-      final isCurrent = menu.title == item.title;
       final isSelectedMenu = menu.title == title;
-
-      // Expand the current item
-
       // Reset selection
       menu.isSelected = false;
 
       // Handle top-level menu selection
       if (isSelectedMenu) {
         menu.isSelected = true;
-        menu.isExpanded.value = isCurrent;
+        menu.isExpanded.value = isExpanded;
         onTap(menu.route);
       }
 
