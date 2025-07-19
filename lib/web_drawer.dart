@@ -1,7 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:web_drawer/src/constant/drawer_colors.dart';
+import 'package:web_drawer/src/drawer_controller.dart';
 import 'package:web_drawer/src/model/drawer_menu_item.dart';
 
 class WebDrawer extends StatefulWidget {
@@ -13,7 +13,6 @@ class WebDrawer extends StatefulWidget {
     required this.drawerTextSelectedColor,
     this.drawerBackground = const Color(0xFF0D1B2A),
     Widget? prefix,
-
     this.drawerHeader,
     Widget? drawerIcon,
     Color? profileBackground,
@@ -34,14 +33,12 @@ class WebDrawer extends StatefulWidget {
     this.searchTextStyle,
   }) : prefix = prefix ?? const SizedBox.shrink(),
        drawerIcon = drawerIcon ?? const Icon(Icons.menu),
-       expandIcon =
-           expandIcon ?? const Icon(Icons.expand_more, color: Colors.white),
-       collapsedIcon =
-           collapsedIcon ?? const Icon(Icons.expand_less, color: Colors.white),
+       expandIcon = expandIcon ?? const Icon(Icons.expand_more, color: Colors.white),
+       collapsedIcon = collapsedIcon ?? const Icon(Icons.expand_less, color: Colors.white),
        profileBackground = profileBackground ?? Colors.white;
 
   /// List of items to be displayed in the drawer menu.
-  final ValueNotifier<List<DrawerMenuItem>> menuItems;
+  final List<DrawerMenuItem> menuItems;
 
   /// Callback function triggered when a menu item is tapped.
   /// Returns the navigation route associated with the tapped item.
@@ -118,450 +115,443 @@ class WebDrawer extends StatefulWidget {
 }
 
 class _WebDrawerState extends State<WebDrawer> {
-  TextEditingController searchController = TextEditingController();
-  ValueNotifier<List<DrawerMenuItem>> mainMenuItem = ValueNotifier([]);
-  ValueNotifier<List<DrawerMenuItem>> filerManuList = ValueNotifier([]);
-  ValueNotifier<bool> isMenuOpen = ValueNotifier(true);
-  ValueNotifier<bool> isDrawerExpand = ValueNotifier(true);
-  ValueNotifier<int> selectedMenuId = ValueNotifier(0);
-  Timer? _debounce;
+  CustomDrawerController logic = Get.find<CustomDrawerController>();
+
   @override
   void initState() {
     super.initState();
-    mainMenuItem = widget.menuItems;
-    filerManuList.value.addAll(widget.menuItems.value);
-  }
-
-  void changeMenu(
-    String? title,
-    String? childTitle,
-    DrawerMenuItem item,
-    Function(String route) onTap,
-    bool isExpanded,
-  ) {
-    for (var menu in mainMenuItem.value) {
-      final isSelectedMenu = menu.title == title;
-      // Reset selection
-      menu.isSelected = false;
-
-      // Handle top-level menu selection
-      if (isSelectedMenu) {
-        menu.isSelected = true;
-        menu.isExpanded.value = isExpanded;
-        onTap(menu.route);
-      } else {
-        menu.isSelected = false;
-      }
-
-      // Handle subcategories
-      if (menu.subCategories != null) {
-        for (var subMenu in menu.subCategories!) {
-          subMenu.isSelected = subMenu.title == childTitle;
-          if (subMenu.isSelected) {
-            onTap(subMenu.route);
-          } else {
-            subMenu.isSelected = false;
-          }
-        }
-      }
-    }
-  }
-
-  void drawerStateChange() {
-    isMenuOpen.value = !isMenuOpen.value;
-    Future.delayed(const Duration(milliseconds: 500), () {
-      isDrawerExpand.value = !isDrawerExpand.value;
-    });
-  }
-
-  void searchMenu(String query) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    List<DrawerMenuItem> result = [];
-    _debounce = Timer(const Duration(milliseconds: 500), () {
-      final lowerQuery = query.toLowerCase();
-      result = mainMenuItem.value
-          .where((menu) {
-            String menuTitle = menu.title.toLowerCase();
-            final isMainMatch = menuTitle.startsWith(lowerQuery);
-            final matchingSubMenus = menu.subCategories
-                ?.where(
-                  (subMenu) =>
-                      subMenu.title.toLowerCase().startsWith(lowerQuery),
-                )
-                .toList();
-            return isMainMatch ||
-                (matchingSubMenus != null && matchingSubMenus.isNotEmpty);
-          })
-          .map((menu) {
-            final matchingSubMenus = menu.subCategories
-                ?.where(
-                  (subMenu) =>
-                      subMenu.title.toLowerCase().startsWith(lowerQuery),
-                )
-                .toList();
-            return DrawerMenuItem(
-              title: menu.title,
-              route: menu.route,
-              iconUrl: menu.iconUrl,
-              isExpanded: menu.isExpanded,
-              subCategories: matchingSubMenus,
-            );
-          })
-          .toList();
-      filerManuList.value = result;
-    });
   }
 
   String getUserInitials(String firstName, [String? lastName]) {
-    String firstInitial = firstName.isNotEmpty
-        ? firstName[0].toUpperCase()
-        : '';
-    String lastInitial = (lastName != null && lastName.isNotEmpty)
-        ? lastName[0].toUpperCase()
-        : '';
+    String firstInitial = firstName.isNotEmpty ? firstName[0].toUpperCase() : '';
+    String lastInitial = (lastName != null && lastName.isNotEmpty) ? lastName[0].toUpperCase() : '';
     return '$firstInitial$lastInitial';
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: isMenuOpen,
-      builder: (context, value, child) => AnimatedContainer(
-        duration: const Duration(milliseconds: 500),
-        width: isMenuOpen.value ? 300 : 64,
-        color: widget.drawerBackground,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                  icon: widget.drawerIcon,
-                  color: widget.drawerIconColor,
-                  iconSize: widget.drawerIconSize,
-                  onPressed: () => drawerStateChange(),
-                ),
-              ),
-            ),
-            if (isMenuOpen.value) ...[
-              const SizedBox(height: 10),
-              if (widget.drawerHeader != null) widget.drawerHeader!,
-              const SizedBox(height: 20),
-            ],
-            Expanded(
-              child: ValueListenableBuilder<List<DrawerMenuItem>>(
-                valueListenable: filerManuList,
-                builder: (context, value, child) {
-                  return Column(
-                    children: [
-                      if (widget.isSearchShow) ...[
-                        if (isMenuOpen.value) ...[
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            child: Container(
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: Colors.white10,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              height: 50, // Fixed height for the TextField
-                              child: TextField(
-                                controller: searchController,
-                                onChanged: (value) => searchMenu(value),
-                                decoration: InputDecoration(
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    vertical: 12,
-                                  ), // Vertical padding for text
-                                  hintText: 'Search',
-                                  isDense: true,
-                                  prefixIcon: widget.prefix,
-                                  suffixIconColor: widget.drawerIconColor,
-                                  hintStyle: const TextStyle(
-                                    color: Colors.white60,
+    return Obx(() {
+      return logic.isLoading.value
+          ? SizedBox()
+          : AnimatedContainer(
+              duration: const Duration(milliseconds: 500),
+              width: logic.isMenuOpen.value ? 300 : 64,
+              color: widget.drawerBackground,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: IconButton(
+                        icon: widget.drawerIcon,
+                        color: widget.drawerIconColor,
+                        iconSize: widget.drawerIconSize,
+                        onPressed: () => logic.drawerStateChange(),
+                      ),
+                    ),
+                  ),
+                  if (logic.isMenuOpen.value) ...[
+                    const SizedBox(height: 10),
+                    if (widget.drawerHeader != null) widget.drawerHeader!,
+                    const SizedBox(height: 20),
+                  ],
+                  Expanded(
+                    child: Column(
+                      children: [
+                        if (widget.isSearchShow) ...[
+                          if (logic.isMenuOpen.value) ...[
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Container(
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10)),
+                                height: 50, // Fixed height for the TextField
+                                child: TextField(
+                                  controller: logic.searchController,
+                                  onChanged: (value) => logic.searchMenu(value),
+                                  decoration: InputDecoration(
+                                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                    // Vertical padding for text
+                                    hintText: 'Search',
+                                    isDense: true,
+                                    prefixIcon: widget.prefix,
+                                    suffixIconColor: widget.drawerIconColor,
+                                    hintStyle: const TextStyle(color: Colors.white60),
+                                    suffixIcon: widget.isShowClearIcon
+                                        ? IconButton(
+                                            icon: Icon(Icons.clear, color: widget.drawerIconColor),
+                                            onPressed: () {
+                                              logic.searchController.clear();
+                                              logic.searchMenu('');
+                                            },
+                                          )
+                                        : null,
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
                                   ),
-                                  suffixIcon: widget.isShowClearIcon
-                                      ? IconButton(
-                                          icon: Icon(
-                                            Icons.clear,
-                                            color: widget.drawerIconColor,
-                                          ),
-                                          onPressed: () {
-                                            searchController.clear();
-                                            searchMenu('');
-                                          },
-                                        )
-                                      : null,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: BorderSide.none,
-                                  ),
+                                  style: widget.searchTextStyle,
                                 ),
-                                style: widget.searchTextStyle,
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
+                            const SizedBox(height: 16),
+                          ],
                         ],
-                      ],
-                      Expanded(
-                        child: ListView(
-                          shrinkWrap: true,
-                          children: (value.map((item) {
-                            return Theme(
-                              data: Theme.of(
-                                context,
-                              ).copyWith(dividerColor: Colors.transparent),
-                              child: isMenuOpen.value
-                                  ? ExpansionTile(
-                                      backgroundColor:
-                                          item.subCategories != null
-                                          ? Colors.transparent
-                                          : (item.isSelected
-                                                ? Colors.white12
-                                                : Colors.white10),
-                                      childrenPadding:
-                                          const EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                          ),
-                                      dense: false,
-                                      tilePadding: const EdgeInsets.symmetric(
-                                        vertical: 5,
-                                        horizontal: 10,
-                                      ),
-                                      initiallyExpanded: item.isExpanded.value,
-                                      onExpansionChanged: isMenuOpen.value
-                                          ? (expanded) {
-                                              if (!isMenuOpen.value) return;
-                                              changeMenu(
-                                                item.title,
-                                                null,
-                                                item,
-                                                (route) {
-                                                  if (item.subCategories ==
-                                                      null) {
-                                                    widget.onMenuTap(route);
-                                                  }
-                                                },
-                                                expanded,
-                                              );
-                                            }
-                                          : null,
-                                      leading: Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 16,
+                        Expanded(
+                          child: ListView(
+                            shrinkWrap: true,
+                            children: (logic.filerManuList.map((item) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                                child: logic.isMenuOpen.value
+                                    ? ExpansionTile(
+                                        backgroundColor: item.subCategories != null
+                                            ? Colors.transparent
+                                            : (item.isSelected.value ? Colors.white12 : Colors.transparent),
+                                        childrenPadding: const EdgeInsets.symmetric(horizontal: 10),
+                                        tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                        initiallyExpanded: item.isExpanded.value,
+                                        onExpansionChanged: logic.isMenuOpen.value
+                                            ? (expanded) {
+                                                if (!logic.isMenuOpen.value) return;
+                                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                  logic.changeMenu(item.title, null, item, (route) {
+                                                    if (item.subCategories == null) {
+                                                      widget.onMenuTap(route);
+                                                    }
+                                                  }, expanded);
+                                                });
+                                              }
+                                            : null,
+                                        leading: Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                                          child: Image.asset(item.iconUrl, color: widget.drawerIconColor),
                                         ),
-                                        child: Image.asset(
-                                          item.iconUrl,
-                                          color: widget.drawerIconColor,
-                                        ),
-                                      ),
-                                      title: isMenuOpen.value
-                                          ? Text(
-                                              item.title,
-                                              style: widget.drawerTextStyle,
-                                            )
-                                          : const SizedBox.shrink(),
+                                        title: logic.isMenuOpen.value ? Text(item.title, style: widget.drawerTextStyle) : const SizedBox.shrink(),
 
-                                      trailing: isMenuOpen.value
-                                          ? Visibility(
-                                              visible:
-                                                  (item.subCategories != null &&
-                                                  item
-                                                      .subCategories!
-                                                      .isNotEmpty),
-                                              child:
-                                                  ValueListenableBuilder<bool>(
-                                                    valueListenable:
-                                                        item.isExpanded,
-                                                    builder:
-                                                        (
-                                                          context,
-                                                          value,
-                                                          child,
-                                                        ) => value
+                                        trailing: logic.isMenuOpen.value
+                                            ? (item.subCategories != null && item.subCategories!.isNotEmpty)
+                                                  ? item.isExpanded.value
                                                         ? widget.expandIcon
-                                                        : widget.collapsedIcon,
-                                                  ),
-                                            )
-                                          : const SizedBox.shrink(),
-                                      children: isMenuOpen.value
-                                          ? (item.subCategories != null)
-                                                ? item.subCategories!.map((
-                                                    subItem,
-                                                  ) {
-                                                    return Visibility(
-                                                      visible:
-                                                          subItem.isVisible,
-                                                      child: isMenuOpen.value
-                                                          ? Theme(
-                                                              data: Theme.of(context).copyWith(
-                                                                dividerColor: Colors
-                                                                    .transparent,
-                                                                expansionTileTheme: ExpansionTileThemeData(
-                                                                  backgroundColor:
-                                                                      subItem
-                                                                          .isSelected
-                                                                      ? Colors
-                                                                            .white12
-                                                                      : Colors
-                                                                            .transparent,
-                                                                  shape: RoundedRectangleBorder(
-                                                                    borderRadius:
-                                                                        BorderRadius.circular(
-                                                                          10,
-                                                                        ),
+                                                        : widget.collapsedIcon
+                                                  : item.notificationCount != null
+                                                  ? Container(
+                                                      padding: EdgeInsets.all(2),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.white,
+                                                        borderRadius: BorderRadius.circular(20),
+                                                        border: Border.all(color: Colors.black),
+                                                      ),
+                                                      child: Text(
+                                                        "${item.notificationCount}",
+                                                        style: widget.drawerTextStyle?.copyWith(color: Colors.black),
+                                                      ),
+                                                    )
+                                                  : SizedBox.shrink()
+                                            : const SizedBox.shrink(),
+                                        children: logic.isMenuOpen.value
+                                            ? (item.subCategories != null)
+                                                  ? item.subCategories!.map((subItem) {
+                                                      return Visibility(
+                                                        visible: subItem.isVisible,
+                                                        child: logic.isMenuOpen.value
+                                                            ? Theme(
+                                                                data: Theme.of(context).copyWith(
+                                                                  dividerColor: Colors.transparent,
+                                                                  expansionTileTheme: ExpansionTileThemeData(
+                                                                    backgroundColor: subItem.isSelected.value ? Colors.white12 : Colors.transparent,
+                                                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                                                   ),
                                                                 ),
-                                                              ),
-                                                              child: ExpansionTile(
-                                                                onExpansionChanged: (value) {
-                                                                  changeMenu(
-                                                                    null,
-                                                                    subItem
-                                                                        .title,
-                                                                    item,
-                                                                    (route) {
-                                                                      widget.onMenuTap(
-                                                                        "${item.route}/$route",
-                                                                      );
-                                                                    },
-                                                                    false,
-                                                                  );
-                                                                },
-                                                                tilePadding:
-                                                                    const EdgeInsets.symmetric(
-                                                                      vertical:
-                                                                          5,
-                                                                      horizontal:
-                                                                          10,
-                                                                    ),
-                                                                trailing:
-                                                                    SizedBox.shrink(),
-                                                                leading: Padding(
-                                                                  padding:
-                                                                      const EdgeInsets.symmetric(
-                                                                        horizontal:
-                                                                            30,
-                                                                      ),
-                                                                  child: Image.asset(
-                                                                    subItem
-                                                                        .iconUrl,
-                                                                    color: widget
-                                                                        .drawerIconColor,
-                                                                    height: 18,
+                                                                child: ExpansionTile(
+                                                                  onExpansionChanged: (value) {
+                                                                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                                                                      logic.changeMenu(null, subItem.title, item, (route) {
+                                                                        widget.onMenuTap("${item.route}/$route");
+                                                                      }, false);
+                                                                    });
+                                                                  },
+                                                                  tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                                                                  trailing: subItem.notificationCount != null
+                                                                      ? Container(
+                                                                          padding: EdgeInsets.all(2),
+                                                                          decoration: BoxDecoration(
+                                                                            color: Colors.white,
+                                                                            borderRadius: BorderRadius.circular(20),
+                                                                            border: Border.all(color: Colors.black),
+                                                                          ),
+                                                                          child: Text(
+                                                                            "${subItem.notificationCount}",
+                                                                            style: widget.drawerTextStyle?.copyWith(color: Colors.black),
+                                                                          ),
+                                                                        )
+                                                                      : SizedBox.shrink(),
+                                                                  leading: Padding(
+                                                                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                                                                    child: Image.asset(subItem.iconUrl, color: widget.drawerIconColor, height: 18),
                                                                   ),
+                                                                  title: logic.isMenuOpen.value
+                                                                      ? Text(
+                                                                          subItem.title,
+                                                                          style: widget.drawerTextStyle,
+                                                                          maxLines: 1,
+                                                                          overflow: TextOverflow.ellipsis,
+                                                                          softWrap: true,
+                                                                        )
+                                                                      : SizedBox.shrink(),
                                                                 ),
-                                                                title:
-                                                                    isMenuOpen
-                                                                        .value
-                                                                    ? Text(
-                                                                        subItem
-                                                                            .title,
-                                                                        style: widget
-                                                                            .drawerTextStyle,
-                                                                        maxLines:
-                                                                            1,
-                                                                        overflow:
-                                                                            TextOverflow.ellipsis,
-                                                                        softWrap:
-                                                                            true,
-                                                                      )
-                                                                    : SizedBox.shrink(),
+                                                              )
+                                                            : Image.asset(
+                                                                subItem.iconUrl,
+                                                                color: widget.drawerIconColor,
+                                                                height: widget.drawerIconSize,
                                                               ),
-                                                            )
-                                                          : Image.asset(
-                                                              subItem.iconUrl,
-                                                              color: widget
-                                                                  .drawerIconColor,
-                                                              height: widget
-                                                                  .drawerIconSize,
-                                                            ),
-                                                    );
-                                                  }).toList()
-                                                : []
-                                          : [],
-                                    )
-                                  : Container(
-                                      decoration: BoxDecoration(
-                                        color: item.isSelected
-                                            ? Colors.white12
-                                            : Colors.transparent,
-                                        borderRadius: BorderRadius.circular(10),
+                                                      );
+                                                    }).toList()
+                                                  : []
+                                            : [],
+                                      )
+                                    : Container(
+                                        decoration: BoxDecoration(
+                                          color: item.isSelected.value ? Colors.white12 : Colors.transparent,
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                        padding: const EdgeInsets.symmetric(vertical: 10),
+                                        child: Image.asset(item.iconUrl, color: widget.drawerIconColor, height: 20),
                                       ),
-                                      //margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 20,
-                                      ),
-                                      child: Image.asset(
-                                        item.iconUrl,
-                                        color: widget.drawerIconColor,
-                                        height: widget.drawerIconSize,
-                                      ),
-                                    ),
-                            );
-                          }).toList()),
+                              );
+                            }).toList()),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Expanded(
+                  //   child: ValueListenableBuilder<List<DrawerMenuItem>>(
+                  //     valueListenable: filerManuList,
+                  //     builder: (context, value, child) {
+                  //       return Column(
+                  //         children: [
+                  //           if (widget.isSearchShow) ...[
+                  //             if (isMenuOpen.value) ...[
+                  //               Padding(
+                  //                 padding: const EdgeInsets.symmetric(horizontal: 12),
+                  //                 child: Container(
+                  //                   alignment: Alignment.center,
+                  //                   decoration: BoxDecoration(color: Colors.white10, borderRadius: BorderRadius.circular(10)),
+                  //                   height: 50, // Fixed height for the TextField
+                  //                   child: TextField(
+                  //                     controller: searchController,
+                  //                     onChanged: (value) => searchMenu(value),
+                  //                     decoration: InputDecoration(
+                  //                       contentPadding: const EdgeInsets.symmetric(vertical: 12), // Vertical padding for text
+                  //                       hintText: 'Search',
+                  //                       isDense: true,
+                  //                       prefixIcon: widget.prefix,
+                  //                       suffixIconColor: widget.drawerIconColor,
+                  //                       hintStyle: const TextStyle(color: Colors.white60),
+                  //                       suffixIcon: widget.isShowClearIcon
+                  //                           ? IconButton(
+                  //                               icon: Icon(Icons.clear, color: widget.drawerIconColor),
+                  //                               onPressed: () {
+                  //                                 searchController.clear();
+                  //                                 searchMenu('');
+                  //                               },
+                  //                             )
+                  //                           : null,
+                  //                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                  //                     ),
+                  //                     style: widget.searchTextStyle,
+                  //                   ),
+                  //                 ),
+                  //               ),
+                  //               const SizedBox(height: 16),
+                  //             ],
+                  //           ],
+                  //           Expanded(
+                  //             child: ListView(
+                  //               shrinkWrap: true,
+                  //               children: (value.map((item) {
+                  //                 return Theme(
+                  //                   data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+                  //                   child: isMenuOpen.value
+                  //                       ? ExpansionTile(
+                  //                           backgroundColor: item.subCategories != null
+                  //                               ? Colors.transparent
+                  //                               : ((item.isSelected?.value ?? false) ? Colors.white12 : Colors.white10),
+                  //                           childrenPadding: const EdgeInsets.symmetric(horizontal: 10),
+                  //                           dense: false,
+                  //                           tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  //                           initiallyExpanded: item.isExpanded.value,
+                  //                           onExpansionChanged: isMenuOpen.value
+                  //                               ? (expanded) {
+                  //                                   if (!isMenuOpen.value) return;
+                  //                                   changeMenu(item.title, null, item, (route) {
+                  //                                     if (item.subCategories == null) {
+                  //                                       widget.onMenuTap(route);
+                  //                                     }
+                  //                                   }, expanded);
+                  //                                 }
+                  //                               : null,
+                  //                           leading: Padding(
+                  //                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                  //                             child: Image.asset(item.iconUrl, color: widget.drawerIconColor),
+                  //                           ),
+                  //                           title: isMenuOpen.value ? Text(item.title, style: widget.drawerTextStyle) : const SizedBox.shrink(),
+                  //
+                  //                           trailing: isMenuOpen.value
+                  //                               ? Visibility(
+                  //                                   visible: (item.subCategories != null && item.subCategories!.isNotEmpty),
+                  //                                   child: ValueListenableBuilder<bool>(
+                  //                                     valueListenable: item.isExpanded,
+                  //                                     builder: (context, value, child) => value ? widget.expandIcon : widget.collapsedIcon,
+                  //                                   ),
+                  //                                 )
+                  //                               : const SizedBox.shrink(),
+                  //                           children: isMenuOpen.value
+                  //                               ? (item.subCategories != null)
+                  //                                     ? item.subCategories!.map((subItem) {
+                  //                                         return Visibility(
+                  //                                           visible: subItem.isVisible,
+                  //                                           child: isMenuOpen.value
+                  //                                               ? Theme(
+                  //                                                   data: Theme.of(context).copyWith(
+                  //                                                     dividerColor: Colors.transparent,
+                  //                                                     expansionTileTheme: ExpansionTileThemeData(
+                  //                                                       backgroundColor: subItem.isSelected ? Colors.white12 : Colors.transparent,
+                  //                                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  //                                                     ),
+                  //                                                   ),
+                  //                                                   child: ExpansionTile(
+                  //                                                     onExpansionChanged: (value) {
+                  //                                                       changeMenu(null, subItem.title, item, (route) {
+                  //                                                         widget.onMenuTap("${item.route}/$route");
+                  //                                                       }, false);
+                  //                                                     },
+                  //                                                     tilePadding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  //                                                     trailing: SizedBox.shrink(),
+                  //                                                     leading: Padding(
+                  //                                                       padding: const EdgeInsets.symmetric(horizontal: 30),
+                  //                                                       child: Image.asset(subItem.iconUrl, color: widget.drawerIconColor, height: 18),
+                  //                                                     ),
+                  //                                                     title: isMenuOpen.value
+                  //                                                         ? Text(
+                  //                                                             subItem.title,
+                  //                                                             style: widget.drawerTextStyle,
+                  //                                                             maxLines: 1,
+                  //                                                             overflow: TextOverflow.ellipsis,
+                  //                                                             softWrap: true,
+                  //                                                           )
+                  //                                                         : SizedBox.shrink(),
+                  //                                                   ),
+                  //                                                 )
+                  //                                               : Image.asset(
+                  //                                                   subItem.iconUrl,
+                  //                                                   color: widget.drawerIconColor,
+                  //                                                   height: widget.drawerIconSize,
+                  //                                                 ),
+                  //                                         );
+                  //                                       }).toList()
+                  //                                     : []
+                  //                               : [],
+                  //                         )
+                  //                       : Container(
+                  //                           decoration: BoxDecoration(
+                  //                             color: (item.isSelected?.value ?? false) ? Colors.white12 : Colors.transparent,
+                  //                             borderRadius: BorderRadius.circular(10),
+                  //                           ),
+                  //                           //margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                  //                           padding: const EdgeInsets.symmetric(vertical: 20),
+                  //                           child: Image.asset(item.iconUrl, color: widget.drawerIconColor, height: 20),
+                  //                         ),
+                  //                 );
+                  //               }).toList()),
+                  //             ),
+                  //           ),
+                  //         ],
+                  //       );
+                  //     },
+                  //   ),
+                  // ),
+                  // Theme(
+                  //   data: Theme.of(
+                  //     context,
+                  //   ).copyWith(dividerColor: Colors.transparent),
+                  //   child: ExpansionTile(
+                  //     title: isMenuOpen.value
+                  //         ? Text("Logoyt")
+                  //         : IconButton(
+                  //             onPressed: () => widget.onLogOutClick(),
+                  //             icon: Icon(Icons.logout),
+                  //             color: widget.drawerIconColor,
+                  //           ),
+                  //   ),
+                  // ),
+                  // isMenuOpen.value
+                  //     ? Padding(
+                  //         padding: EdgeInsetsGeometry.symmetric(
+                  //           horizontal: 20,
+                  //           vertical: 10,
+                  //         ),
+                  //         child: Row(
+                  //           children: [
+                  //             Icon(
+                  //               Icons.logout,
+                  //               color: widget.drawerIconColor,
+                  //               size: 20,
+                  //             ),
+                  //             const SizedBox(width: 10),
+                  //             Text(
+                  //               widget.logOutText ?? "Logout",
+                  //               style: widget.drawerTextStyle,
+                  //               overflow: TextOverflow.ellipsis,
+                  //             ),
+                  //           ],
+                  //         ),
+                  //       )
+                  //     : IconButton(
+                  //         onPressed: () => widget.onLogOutClick(),
+                  //         icon: Icon(Icons.logout),
+                  //         color: widget.drawerIconColor,
+                  //       ),
+                  logic.isMenuOpen.value
+                      ? InkWell(
+                          onTap: () => widget.onLogOutClick(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            constraints: const BoxConstraints(maxWidth: double.infinity),
+                            child: Row(
+                              children: [
+                                Icon(Icons.logout, color: widget.drawerIconColor, size: 24),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(widget.logOutText ?? "Logout", style: widget.drawerTextStyle, overflow: TextOverflow.ellipsis),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : IconButton(
+                          onPressed: () => widget.onLogOutClick(),
+                          icon: Icon(Icons.logout, color: widget.drawerIconColor),
+                        ),
+                  if (widget.version != null)
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          "V ${widget.version ?? ""}",
+                          textAlign: TextAlign.center,
+                          style: widget.versionTextStyle?.copyWith(color: Colors.white),
                         ),
                       ),
-                    ],
-                  );
-                },
+                    ),
+                ],
               ),
-            ),
-            ExpansionTile(
-              onExpansionChanged: (value) => drawerStateChange(),
-              tilePadding: const EdgeInsets.symmetric(
-                vertical: 5,
-                horizontal: 10,
-              ),
-              leading: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 16,
-                ),
-                child: Icon(
-                  Icons.logout,
-                  color: widget.drawerIconColor,
-                  size: widget.drawerIconSize,
-                ),
-              ),
-              title: isMenuOpen.value
-                  ? Text(
-                      widget.logOutText ?? "Logout",
-                      style: widget.drawerTextStyle,
-                    )
-                  : const SizedBox.shrink(),
-              backgroundColor: Colors.transparent,
-              textColor: Colors.white,
-              iconColor: Colors.white,
-              trailing: const SizedBox.shrink(),
-              children: [
-                ListTile(
-                  onTap: () => widget.onLogOutClick(),
-                  title: Text(
-                    widget.logOutText ?? "Logout",
-                    style: widget.drawerTextStyle,
-                  ),
-                ),
-              ],
-            ),
-            if (widget.version != null)
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    "V ${widget.version ?? ""}",
-                    textAlign: TextAlign.center,
-                    style: widget.versionTextStyle,
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
+            );
+    });
   }
 }

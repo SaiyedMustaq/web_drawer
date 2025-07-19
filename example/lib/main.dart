@@ -16,25 +16,23 @@ List<DrawerMenuItem> menuItems = [
   DrawerMenuItem(
     title: 'Buying Station',
     route: RouteName.byuingstation,
+    notificationCount: 3,
     iconUrl: "assets/piggy-bank.png",
-    isExpanded: ValueNotifier(false),
     subCategories: [
-      DrawerSubMenuMenuItem(title: 'Quality', iconUrl: "assets/piggy-bank.png", route: RouteName.byuingstation1),
-      DrawerSubMenuMenuItem(title: 'Opetation', iconUrl: "assets/piggy-bank.png", route: RouteName.byuingstation2),
+      DrawerSubMenuMenuItem(
+        parentTitle: 'Buying Station',
+        title: 'Quality',
+        iconUrl: "assets/piggy-bank.png",
+        route: RouteName.byuingstation1,
+        notificationCount: 25,
+      ),
+      DrawerSubMenuMenuItem(parentTitle: 'Buying Station', title: 'Opetation', iconUrl: "assets/piggy-bank.png", route: RouteName.byuingstation2),
     ],
   ),
-  DrawerMenuItem(title: 'Procurement', iconUrl: "assets/box.png", isExpanded: ValueNotifier(false), route: RouteName.procurement),
-  DrawerMenuItem(
-    title: 'Handover',
-    iconUrl: "assets/settings.png",
-    isExpanded: ValueNotifier(false),
-    route: RouteName.handover,
-    subCategories: [
-      DrawerSubMenuMenuItem(title: 'Handover1', iconUrl: "assets/settings.png", route: RouteName.handover1),
-      DrawerSubMenuMenuItem(iconUrl: "assets/settings.png", title: 'Handover2', route: RouteName.handover2),
-    ],
-  ),
-  DrawerMenuItem(title: 'Sales Invoice', isExpanded: ValueNotifier(false), iconUrl: "assets/user.png", route: RouteName.saleinvoice),
+
+  DrawerMenuItem(title: 'Procurement', iconUrl: "assets/box.png", route: RouteName.procurement),
+
+  DrawerMenuItem(title: 'Sales Invoice', iconUrl: "assets/user.png", route: RouteName.saleinvoice, notificationCount: 36),
 ];
 
 class MyApp extends StatelessWidget {
