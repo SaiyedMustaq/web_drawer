@@ -9,7 +9,7 @@
 ## 0.0.3
 * TODO: Small Bug fix UI
 
-## [0.0.4] - 2025-07-19
+## 0.0.4
 
 ### ✨ What's New
 - Integrated `GetX` for state management (`get: ^4.7.2`)
